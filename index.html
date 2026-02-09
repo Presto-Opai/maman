@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>El Viaje de Ana Lucila</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; font-family: 'Georgia', serif; }
+canvas { display: block; cursor: pointer; touch-action: none; }
+
+/* Start screen */
+#start-screen {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 100; color: #fff; text-align: center;
+}
+#start-screen h1 {
+  font-size: clamp(28px, 6vw, 56px); margin-bottom: 10px;
+  font-style: italic; color: #e8d5b7;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+}
+#start-screen .subtitle {
+  font-size: clamp(14px, 3vw, 22px); color: #c9a96e; margin-bottom: 50px;
+}
+#start-screen button {
+  display: block; margin: 10px auto; padding: 16px 40px;
+  font-size: clamp(16px, 3vw, 22px); font-family: 'Georgia', serif;
+  border: 2px solid #c9a96e; background: transparent; color: #e8d5b7;
+  border-radius: 8px; cursor: pointer; transition: all 0.3s;
+  min-width: 260px;
+}
+#start-screen button:hover { background: #c9a96e; color: #1a1a2e; }
+#start-screen button:disabled { opacity: 0.3; cursor: default; }
+#start-screen button:disabled:hover { background: transparent; color: #e8d5b7; }
+
+/* HUD */
+#hud {
+  position: fixed; top: 0; left: 0; width: 100%; padding: 8px 12px;
+  background: rgba(0,0,0,0.6); color: #fff; font-size: clamp(11px, 2.2vw, 15px);
+  z-index: 10; pointer-events: none; backdrop-filter: blur(4px);
+}
+#hud .quest-line { padding: 2px 0; }
+#hud .quest-line.completed { text-decoration: line-through; opacity: 0.4; }
+#hud .quest-line .candle { color: #f5c842; }
+
+/* Dialogue box */
+#dialogue-box {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  width: min(90%, 600px); background: rgba(20, 20, 40, 0.92);
+  border: 2px solid #c9a96e; border-radius: 12px; padding: 16px 20px;
+  color: #e8d5b7; font-size: clamp(14px, 2.8vw, 18px); z-index: 20;
+  display: none; cursor: pointer; backdrop-filter: blur(6px);
+  line-height: 1.5;
+}
+#dialogue-box .speaker { color: #f5c842; font-weight: bold; margin-bottom: 4px; }
+#dialogue-box .tap-hint { font-size: 11px; color: #888; text-align: right; margin-top: 6px; }
+
+/* Sculpture mini-game */
+#sculpture-game {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85); z-index: 50; display: none;
+  flex-direction: column; align-items: center; justify-content: center; color: #fff;
+}
+#sculpture-game h2 { margin-bottom: 20px; color: #e8d5b7; font-size: clamp(18px, 4vw, 28px); }
+#sculpture-game .sculpture-container {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 20px;
+}
+#sculpture-game .sculpture-row {
+  display: flex; align-items: center; gap: 10px;
+}
+#sculpture-game .sculpture-part {
+  width: clamp(80px, 20vw, 140px); height: clamp(50px, 10vw, 70px);
+  background: #3a3a5c; border: 2px solid #c9a96e; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(22px, 5vw, 40px); user-select: none;
+}
+#sculpture-game .arrow-btn {
+  width: 40px; height: 40px; background: #c9a96e; border: none; border-radius: 50%;
+  font-size: 20px; cursor: pointer; color: #1a1a2e; font-weight: bold;
+}
+#sculpture-game .arrow-btn:hover { background: #e8d5b7; }
+#sculpture-game .validate-btn {
+  padding: 12px 30px; font-size: 18px; background: #4a9e4a; border: none;
+  border-radius: 8px; color: #fff; cursor: pointer; font-family: 'Georgia', serif;
+}
+#sculpture-game .validate-btn:hover { background: #5cb85c; }
+#sculpture-game .error-msg { color: #e74c3c; margin-top: 10px; font-size: 14px; }
+
+/* End screen */
+#end-screen {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.9); z-index: 100; display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  color: #fff; text-align: center;
+}
+#end-screen h1 {
+  font-size: clamp(24px, 5vw, 48px); color: #f5c842;
+  font-style: italic; margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(245, 200, 66, 0.5);
+}
+#end-screen p { font-size: clamp(16px, 3vw, 24px); color: #e8d5b7; margin-bottom: 40px; }
+#end-screen button {
+  padding: 14px 36px; font-size: 20px; border: 2px solid #c9a96e;
+  background: transparent; color: #e8d5b7; border-radius: 8px;
+  cursor: pointer; font-family: 'Georgia', serif;
+}
+#end-screen button:hover { background: #c9a96e; color: #1a1a2e; }
+
+/* Mini-map */
+#minimap {
+  position: fixed; bottom: 10px; right: 10px;
+  width: clamp(100px, 20vw, 160px); height: clamp(66px, 13vw, 106px);
+  border: 2px solid #c9a96e; border-radius: 6px;
+  background: rgba(0,0,0,0.6); z-index: 10;
+  pointer-events: none; overflow: hidden;
+}
+#minimap canvas { width: 100%; height: 100%; }
+
+/* Region label */
+#region-label {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-size: clamp(28px, 6vw, 56px); color: #e8d5b7; font-style: italic;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.8); z-index: 15;
+  pointer-events: none; opacity: 0; transition: opacity 0.5s;
+}
+</style>
+</head>
+<body>
+
+<!-- Start Screen -->
+<div id="start-screen">
+  <h1>El Viaje de Ana Lucila</h1>
+  <div class="subtitle">Un jeu d'anniversaire</div>
+  <button id="btn-new">Nouvelle Partie</button>
+  <button id="btn-continue" disabled>Continuer</button>
+</div>
+
+<!-- Game Canvas -->
+<canvas id="game-canvas"></canvas>
+
+<!-- HUD -->
+<div id="hud" style="display:none;"></div>
+
+<!-- Dialogue -->
+<div id="dialogue-box">
+  <div class="speaker"></div>
+  <div class="text"></div>
+  <div class="tap-hint">▼ cliquer pour continuer</div>
+</div>
+
+<!-- Region Label -->
+<div id="region-label"></div>
+
+<!-- Mini-map -->
+<div id="minimap" style="display:none;"><canvas id="minimap-canvas" width="160" height="106"></canvas></div>
+
+<!-- Sculpture Mini-Game -->
+<div id="sculpture-game">
+  <h2>Sculpter une danseuse</h2>
+  <div class="sculpture-container" id="sculpture-container"></div>
+  <button class="validate-btn" id="sculpture-validate">Valider !</button>
+  <div class="error-msg" id="sculpture-error"></div>
+</div>
+
+<!-- End Screen -->
+<div id="end-screen">
+  <h1>Joyeux anniversaire Lucy !</h1>
+  <p>Je t'aime maman.</p>
+  <button id="btn-restart">Recommencer</button>
+</div>
+
+<script>
+// ============================================================
+// EL VIAJE DE ANA LUCILA — Complete Game
+// ============================================================
+
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+
+// ---- Constants ----
+const TILE = 40;
+const PLAYER_SPEED = 3.5;
+const NPC_INTERACT_DIST = 60;
+const ITEM_PICKUP_DIST = 50;
+
+// Seeded random for consistent decorations
+let _seed = 42;
+function seededRandom() {
+  _seed = (_seed * 16807 + 0) % 2147483647;
+  return (_seed - 1) / 2147483646;
+}
+
+// ---- World dimensions ----
+// World is a big map: 6 regions laid out in a grid
+// Each region is 40x30 tiles = 1600x1200 px
+const REGION_W = 40 * TILE; // 1600
+const REGION_H = 30 * TILE; // 1200
+
+// Layout: 3 cols x 2 rows
+// Row 0: Vélizy | Cuernavaca | Acapulco
+// Row 1: Paris  | Grenoble   | Athis-de-l'Orne
+const WORLD_W = 3 * REGION_W; // 4800
+const WORLD_H = 2 * REGION_H; // 2400
+
+const REGIONS = {
+  velizy:      { col: 0, row: 0, name: 'Vélizy',          emoji: '🏫', color: '#4a7c59' },
+  cuernavaca:  { col: 1, row: 0, name: 'Cuernavaca',      emoji: '🇲🇽', color: '#c4a35a' },
+  acapulco:    { col: 2, row: 0, name: 'Acapulco',        emoji: '🏖️', color: '#3a8a9e' },
+  paris:       { col: 0, row: 1, name: 'Paris',           emoji: '🇫🇷', color: '#6a6a8a' },
+  grenoble:    { col: 1, row: 1, name: 'Grenoble',        emoji: '⛰️', color: '#5a7a5a' },
+  athis:       { col: 2, row: 1, name: "Athis-de-l'Orne", emoji: '🐄', color: '#6a9a4a' },
+};
+
+function regionOrigin(regionKey) {
+  const r = REGIONS[regionKey];
+  return { x: r.col * REGION_W, y: r.row * REGION_H };
+}
+
+function regionCenter(regionKey) {
+  const o = regionOrigin(regionKey);
+  return { x: o.x + REGION_W / 2, y: o.y + REGION_H / 2 };
+}
+
+// ---- Game State ----
+let gameState = null;
+
+function newGameState() {
+  return {
+    playerX: regionOrigin('velizy').x + 300,
+    playerY: regionOrigin('velizy').y + 400,
+    targetX: null,
+    targetY: null,
+    quests: {
+      carmen:     { status: 'not_started', tortillas: 0 },
+      piquis:     { status: 'not_started', erikaFollowing: false },
+      lupita:     { status: 'not_started', hasSac: false },
+      valerie:    { status: 'not_started', sculptureComplete: false },
+      grenoble:   { status: 'not_started' },
+      apolline:   { status: 'not_started', foundArthur: false },
+    },
+    talkedTo: {},
+    completedQuests: [],
+    allComplete: false,
+    currentRegion: 'velizy',
+  };
+}
+
+// ---- Camera ----
+let camX = 0, camY = 0;
+
+function updateCamera() {
+  camX = gameState.playerX - canvas.width / 2;
+  camY = gameState.playerY - canvas.height / 2;
+  camX = Math.max(0, Math.min(camX, WORLD_W - canvas.width));
+  camY = Math.max(0, Math.min(camY, WORLD_H - canvas.height));
+}
+
+// ---- Resize ----
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ---- Decorations & Buildings per region ----
+// Each building: { x, y, w, h, color, label, labelColor }
+// Positions are relative to region origin
+
+function getRegionBuildings(regionKey) {
+  const o = regionOrigin(regionKey);
+  const ox = o.x, oy = o.y;
+  const buildings = [];
+  const decorations = [];
+
+  switch (regionKey) {
+    case 'velizy': {
+      // School
+      buildings.push({ x: ox+200, y: oy+200, w: 200, h: 120, color: '#8B7355', label: 'École', labelColor: '#fff' });
+      // Houses
+      buildings.push({ x: ox+600, y: oy+100, w: 100, h: 80, color: '#a08060', label: 'Maison', labelColor: '#fff' });
+      buildings.push({ x: ox+800, y: oy+300, w: 120, h: 80, color: '#907050', label: 'Maison', labelColor: '#fff' });
+      buildings.push({ x: ox+1000, y: oy+150, w: 140, h: 100, color: '#b09070', label: 'Boulangerie', labelColor: '#fff' });
+      buildings.push({ x: ox+500, y: oy+600, w: 160, h: 100, color: '#807060', label: 'Parc', labelColor: '#fff' });
+      // Gathering area (for finale)
+      buildings.push({ x: ox+250, y: oy+700, w: 200, h: 20, color: '#6a5a4a', label: 'Place du village', labelColor: '#ddd' });
+      // Trees
+      for (let i = 0; i < 15; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*1000, type: 'tree' });
+      }
+      break;
+    }
+    case 'cuernavaca': {
+      // Sombrero shop
+      buildings.push({ x: ox+300, y: oy+300, w: 180, h: 120, color: '#d4a050', label: 'Boutique Sombreros', labelColor: '#fff' });
+      // Market
+      buildings.push({ x: ox+700, y: oy+200, w: 200, h: 100, color: '#c09040', label: 'Mercado', labelColor: '#fff' });
+      buildings.push({ x: ox+600, y: oy+600, w: 140, h: 90, color: '#b08030', label: 'Cantina', labelColor: '#fff' });
+      buildings.push({ x: ox+1000, y: oy+400, w: 120, h: 80, color: '#a07030', label: 'Casa', labelColor: '#fff' });
+      // Cacti
+      for (let i = 0; i < 12; i++) {
+        decorations.push({ x: ox + 80 + seededRandom()*1400, y: oy + 80 + seededRandom()*1000, type: 'cactus' });
+      }
+      break;
+    }
+    case 'acapulco': {
+      // Hotel
+      buildings.push({ x: ox+300, y: oy+200, w: 260, h: 160, color: '#e0c080', label: 'Hôtel Acapulco Princess', labelColor: '#333' });
+      // Beach
+      buildings.push({ x: ox+800, y: oy+100, w: 300, h: 80, color: '#f0d090', label: 'Plage', labelColor: '#555' });
+      buildings.push({ x: ox+600, y: oy+500, w: 140, h: 90, color: '#d0b070', label: 'Restaurant', labelColor: '#fff' });
+      // Palm trees
+      for (let i = 0; i < 10; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 80 + seededRandom()*1000, type: 'palm' });
+      }
+      // Ocean at right side
+      break;
+    }
+    case 'paris': {
+      // Aero Mexico office
+      buildings.push({ x: ox+300, y: oy+300, w: 220, h: 130, color: '#7a7a9a', label: 'Bureau Aero Mexico', labelColor: '#fff' });
+      // Lancel shop
+      buildings.push({ x: ox+900, y: oy+400, w: 160, h: 100, color: '#9a8a7a', label: 'Boutique Lancel', labelColor: '#fff' });
+      // Eiffel-ish
+      buildings.push({ x: ox+600, y: oy+100, w: 80, h: 200, color: '#8a8a8a', label: 'Tour Eiffel', labelColor: '#ddd' });
+      buildings.push({ x: ox+200, y: oy+600, w: 130, h: 90, color: '#6a6a7a', label: 'Café', labelColor: '#fff' });
+      buildings.push({ x: ox+1100, y: oy+200, w: 120, h: 80, color: '#7a6a5a', label: 'Brasserie', labelColor: '#fff' });
+      // Trees
+      for (let i = 0; i < 8; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*1000, type: 'tree' });
+      }
+      break;
+    }
+    case 'grenoble': {
+      // Bottom area - city
+      buildings.push({ x: ox+200, y: oy+800, w: 180, h: 100, color: '#6a7a6a', label: 'Gare', labelColor: '#fff' });
+      buildings.push({ x: ox+600, y: oy+900, w: 150, h: 90, color: '#5a6a5a', label: 'Maison', labelColor: '#fff' });
+      // Téléphérique station bottom
+      buildings.push({ x: ox+500, y: oy+700, w: 100, h: 60, color: '#8a7a5a', label: 'Téléphérique ↑', labelColor: '#ff0' });
+      // Mountain path (visual only, walkable)
+      // Bastille at top
+      buildings.push({ x: ox+500, y: oy+100, w: 200, h: 120, color: '#7a8a6a', label: 'La Bastille', labelColor: '#fff' });
+      // Mountain decorations
+      for (let i = 0; i < 20; i++) {
+        decorations.push({ x: ox + 80 + seededRandom()*1400, y: oy + 50 + seededRandom()*600, type: 'rock' });
+      }
+      for (let i = 0; i < 10; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 600 + seededRandom()*500, type: 'tree' });
+      }
+      break;
+    }
+    case 'athis': {
+      // Mairie
+      buildings.push({ x: ox+300, y: oy+200, w: 200, h: 130, color: '#8a9a7a', label: 'Mairie', labelColor: '#fff' });
+      // Maze area (visual indicator)
+      buildings.push({ x: ox+700, y: oy+300, w: 500, h: 500, color: '#3a5a2a', label: 'Jardin-Labyrinthe', labelColor: '#cfc' });
+      // Farms
+      buildings.push({ x: ox+200, y: oy+600, w: 120, h: 80, color: '#7a8a5a', label: 'Ferme', labelColor: '#fff' });
+      // Cows and decorations
+      for (let i = 0; i < 8; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*500, y: oy + 400 + seededRandom()*700, type: 'cow' });
+      }
+      for (let i = 0; i < 6; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*1000, type: 'tree' });
+      }
+      break;
+    }
+  }
+  return { buildings, decorations };
+}
+
+// Precompute all buildings
+let allBuildings = [];
+let allDecorations = [];
+function buildWorld() {
+  allBuildings = [];
+  allDecorations = [];
+  _seed = 42; // Reset seed for consistent decoration placement
+  for (const key of Object.keys(REGIONS)) {
+    const { buildings, decorations } = getRegionBuildings(key);
+    allBuildings.push(...buildings);
+    allDecorations.push(...decorations);
+  }
+}
+
+// ---- Maze for Athis ----
+const MAZE_ORIGIN_X = regionOrigin('athis').x + 720;
+const MAZE_ORIGIN_Y = regionOrigin('athis').y + 320;
+const MAZE_CELL = 50;
+const MAZE_COLS = 9;
+const MAZE_ROWS = 9;
+
+// Simple predefined maze (1 = wall, 0 = path)
+const MAZE_GRID = [
+  [1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,1,0,0,0,1],
+  [1,0,1,0,1,0,1,0,1],
+  [1,0,1,0,0,0,1,0,1],
+  [1,0,1,1,1,0,1,0,1],
+  [1,0,0,0,0,0,1,0,1],
+  [1,1,1,0,1,1,1,0,1],
+  [1,0,0,0,0,0,0,0,1],
+  [1,1,1,0,0,0,1,1,1],
+];
+
+// Maze entrance at bottom-center
+const MAZE_ENTRANCE = { col: 3, row: 7 };
+// Arthur & Céleste at center
+const MAZE_CENTER = { col: 3, row: 3 };
+
+function mazeWorldPos(col, row) {
+  return {
+    x: MAZE_ORIGIN_X + col * MAZE_CELL + MAZE_CELL / 2,
+    y: MAZE_ORIGIN_Y + row * MAZE_CELL + MAZE_CELL / 2,
+  };
+}
+
+function isInMazeWall(wx, wy) {
+  const col = Math.floor((wx - MAZE_ORIGIN_X) / MAZE_CELL);
+  const row = Math.floor((wy - MAZE_ORIGIN_Y) / MAZE_CELL);
+  if (col < 0 || col >= MAZE_COLS || row < 0 || row >= MAZE_ROWS) return false;
+  return MAZE_GRID[row][col] === 1;
+}
+
+// Maze decorations (carrots, camemberts, cows inside maze)
+const mazeDecos = [];
+function initMazeDecos() {
+  mazeDecos.length = 0;
+  _seed = 123; // Reset seed for consistent maze decoration placement
+  const pathCells = [];
+  for (let r = 0; r < MAZE_ROWS; r++) {
+    for (let c = 0; c < MAZE_COLS; c++) {
+      if (MAZE_GRID[r][c] === 0 && !(r === MAZE_CENTER.row && c === MAZE_CENTER.col)) {
+        pathCells.push({r, c});
+      }
+    }
+  }
+  const types = ['carrot', 'camembert', 'cow', 'veggie'];
+  for (let i = 0; i < 6; i++) {
+    const cell = pathCells[Math.floor(seededRandom() * pathCells.length)];
+    const pos = mazeWorldPos(cell.c, cell.r);
+    mazeDecos.push({ x: pos.x, y: pos.y, type: types[i % types.length] });
+  }
+}
+
+// ---- NPCs ----
+function createNPCs() {
+  const vo = regionOrigin('velizy');
+  const co = regionOrigin('cuernavaca');
+  const ao = regionOrigin('acapulco');
+  const po = regionOrigin('paris');
+  const go = regionOrigin('grenoble');
+  const ato = regionOrigin('athis');
+
+  return [
+    // Vélizy
+    {
+      id: 'gerard', name: 'Gérard', region: 'velizy',
+      x: vo.x + 350, y: vo.y + 450, color: '#e07050',
+      emoji: '👴', hasCandle: false,
+      dialogue: () => {
+        if (gameState.allComplete) return "Joyeux anniversaire ! Tout le monde est là !";
+        return "Joyeux anniversaire ! Tu as parlé à tout le monde ?";
+      },
+    },
+    {
+      id: 'valerie', name: 'Valérie', region: 'velizy',
+      x: vo.x + 250, y: vo.y + 350, color: '#d070a0',
+      emoji: '👩‍🏫', hasCandle: true, quest: 'valerie',
+      dialogue: () => {
+        const q = gameState.quests.valerie;
+        if (q.status === 'completed') return "Joyeux anniversaire ! La sculpture est magnifique !";
+        if (q.status === 'in_progress') {
+          if (q.sculptureComplete) {
+            q.status = 'completed';
+            completeQuest('valerie');
+            return "Joyeux anniversaire ! C'est exactement la danseuse que je voulais ! Merci !";
+          }
+          openSculptureGame();
+          return null;
+        }
+        q.status = 'in_progress';
+        saveGame();
+        openSculptureGame();
+        return null;
+      },
+    },
+    // Cuernavaca
+    {
+      id: 'carmen', name: 'Carmen', region: 'cuernavaca',
+      x: co.x + 350, y: co.y + 450, color: '#e0a050',
+      emoji: '👩', hasCandle: true, quest: 'carmen',
+      dialogue: () => {
+        const q = gameState.quests.carmen;
+        if (q.status === 'completed') return "Joyeux anniversaire ! Gracias por las tortillas !";
+        if (q.status === 'in_progress') {
+          if (q.tortillas >= 3) {
+            q.status = 'completed';
+            completeQuest('carmen');
+            return "Joyeux anniversaire ! Tu as trouvé les trois tortillas ! Merci !";
+          }
+          return `Joyeux anniversaire ! Il me faut trois tortillas... Tu en as ${q.tortillas}/3.`;
+        }
+        q.status = 'in_progress';
+        saveGame();
+        return "Joyeux anniversaire ! Tu peux me ramener trois tortillas ? Elles sont quelque part dans la région !";
+      },
+    },
+    // Acapulco
+    {
+      id: 'piquis', name: 'Piquis', region: 'acapulco',
+      x: ao.x + 350, y: ao.y + 350, color: '#70b0e0',
+      emoji: '👵', hasCandle: true, quest: 'piquis',
+      dialogue: () => {
+        const q = gameState.quests.piquis;
+        if (q.status === 'completed') return "Joyeux anniversaire ! Erika est revenue, merci !";
+        if (q.status === 'in_progress') {
+          if (q.erikaFollowing) {
+            q.status = 'completed';
+            completeQuest('piquis');
+            return "Joyeux anniversaire ! Erika, te voilà ! Merci de l'avoir ramenée !";
+          }
+          return "Joyeux anniversaire ! Tu as trouvé Erika ? Elle regarde l'océan quelque part...";
+        }
+        q.status = 'in_progress';
+        saveGame();
+        return "Joyeux anniversaire ! Peux-tu me ramener Erika ? Elle est partie regarder l'océan plus loin...";
+      },
+    },
+    {
+      id: 'erika', name: 'Erika', region: 'acapulco',
+      x: ao.x + 1200, y: ao.y + 800, color: '#e070a0',
+      emoji: '👧', hasCandle: false,
+      dialogue: () => {
+        const q = gameState.quests.piquis;
+        if (q.status === 'completed') return "L'océan est tellement beau !";
+        if (q.status === 'in_progress' && !q.erikaFollowing) {
+          q.erikaFollowing = true;
+          saveGame();
+          return "Joyeux anniversaire ! D'accord, je te suis ! Retournons voir Piquis !";
+        }
+        return "Je regarde l'océan... c'est si beau ici.";
+      },
+    },
+    // Paris
+    {
+      id: 'lupita', name: 'Lupita', region: 'paris',
+      x: po.x + 350, y: po.y + 450, color: '#a070c0',
+      emoji: '👩‍💼', hasCandle: true, quest: 'lupita',
+      dialogue: () => {
+        const q = gameState.quests.lupita;
+        if (q.status === 'completed') return "Joyeux anniversaire ! J'adore mon sac Lancel !";
+        if (q.status === 'in_progress') {
+          if (q.hasSac) {
+            q.status = 'completed';
+            completeQuest('lupita');
+            return "Joyeux anniversaire ! Oh, le sac Lancel ! Il est magnifique ! Merci !";
+          }
+          return "Joyeux anniversaire ! Tu as trouvé le sac Lancel ? Regarde derrière la boutique Lancel !";
+        }
+        q.status = 'in_progress';
+        saveGame();
+        return "Joyeux anniversaire ! Peux-tu me ramener un sac Lancel ? La boutique est quelque part dans Paris !";
+      },
+    },
+    // Grenoble - passant
+    {
+      id: 'passant_grenoble', name: 'Passant', region: 'grenoble',
+      x: go.x + 300, y: go.y + 900, color: '#8a8a8a',
+      emoji: '🚶', hasCandle: false,
+      dialogue: () => "Joyeux anniversaire ! Je crois qu'ils sont à la Bastille. Prenez le téléphérique ou montez à pied !",
+    },
+    // Géraldine at top
+    {
+      id: 'geraldine', name: 'Géraldine', region: 'grenoble',
+      x: go.x + 550, y: go.y + 160, color: '#d070b0',
+      emoji: '👩', hasCandle: true, quest: 'grenoble',
+      dialogue: () => {
+        const q = gameState.quests.grenoble;
+        if (q.status === 'completed') return "Joyeux anniversaire maman !";
+        q.status = 'completed';
+        completeQuest('grenoble');
+        saveGame();
+        return "Joyeux anniversaire maman !";
+      },
+    },
+    {
+      id: 'hugo', name: 'Hugo', region: 'grenoble',
+      x: go.x + 650, y: go.y + 180, color: '#5080c0',
+      emoji: '👨', hasCandle: false,
+      dialogue: () => "Joyeux anniversaire !",
+    },
+    {
+      id: 'victor', name: 'Petit Victor', region: 'grenoble',
+      x: go.x + 600, y: go.y + 220, color: '#80c080',
+      emoji: '👶', hasCandle: false,
+      dialogue: () => "Grooa ! Joyeux anniversaire Abue !",
+    },
+    // Athis-de-l'Orne
+    {
+      id: 'apolline', name: 'Apolline', region: 'athis',
+      x: ato.x + 350, y: ato.y + 350, color: '#c0a070',
+      emoji: '👩‍💼', hasCandle: true, quest: 'apolline',
+      dialogue: () => {
+        const q = gameState.quests.apolline;
+        if (q.status === 'completed') return "Joyeux anniversaire ! Les enfants sont contents !";
+        if (q.status === 'in_progress') {
+          if (q.foundArthur) {
+            q.status = 'completed';
+            completeQuest('apolline');
+            return "Joyeux anniversaire ! Tu as retrouvé Arthur et Céleste ! Merci !";
+          }
+          return "Joyeux anniversaire ! Va dans le jardin-labyrinthe pour retrouver Arthur et Céleste !";
+        }
+        q.status = 'in_progress';
+        saveGame();
+        return "Joyeux anniversaire ! Peux-tu retrouver Arthur et Céleste dans le jardin-labyrinthe ?";
+      },
+    },
+    // Arthur & Céleste inside maze
+    {
+      id: 'arthur', name: 'Arthur', region: 'athis',
+      x: mazeWorldPos(MAZE_CENTER.col, MAZE_CENTER.row).x - 15,
+      y: mazeWorldPos(MAZE_CENTER.col, MAZE_CENTER.row).y,
+      color: '#70a0d0', emoji: '👦', hasCandle: false,
+      dialogue: () => {
+        const q = gameState.quests.apolline;
+        if (q.status === 'in_progress') {
+          q.foundArthur = true;
+          saveGame();
+          return "Joyeux anniversaire maman ! On rentre voir Apolline !";
+        }
+        return "Joyeux anniversaire !";
+      },
+    },
+    {
+      id: 'celeste', name: 'Bébé Céleste', region: 'athis',
+      x: mazeWorldPos(MAZE_CENTER.col, MAZE_CENTER.row).x + 15,
+      y: mazeWorldPos(MAZE_CENTER.col, MAZE_CENTER.row).y + 20,
+      color: '#f0a0c0', emoji: '👶', hasCandle: false,
+      dialogue: () => "Abadi abwé !",
+    },
+  ];
+}
+
+let npcs = [];
+
+// ---- Items ----
+let items = [];
+
+function createItems() {
+  const co = regionOrigin('cuernavaca');
+  const po = regionOrigin('paris');
+  return [
+    // 3 tortillas in Cuernavaca
+    { id: 'tortilla1', type: 'tortilla', x: co.x + 800, y: co.y + 500, emoji: '🫓', picked: false },
+    { id: 'tortilla2', type: 'tortilla', x: co.x + 1100, y: co.y + 300, emoji: '🫓', picked: false },
+    { id: 'tortilla3', type: 'tortilla', x: co.x + 600, y: co.y + 800, emoji: '🫓', picked: false },
+    // Sac Lancel behind the boutique in Paris
+    { id: 'sac_lancel', type: 'sac', x: po.x + 1050, y: po.y + 520, emoji: '👜', picked: false },
+  ];
+}
+
+// ---- Telepherique (Grenoble) ----
+const grenOrigin = regionOrigin('grenoble');
+const TELEPHERIQUE = {
+  bottomX: grenOrigin.x + 550, bottomY: grenOrigin.y + 700,
+  topX: grenOrigin.x + 550, topY: grenOrigin.y + 250,
+  active: false,
+};
+
+// ---- Dialogue System ----
+let dialogueQueue = [];
+let dialogueActive = false;
+
+function showDialogue(speaker, text) {
+  dialogueQueue.push({ speaker, text });
+  if (!dialogueActive) nextDialogue();
+}
+
+function nextDialogue() {
+  if (dialogueQueue.length === 0) {
+    dialogueActive = false;
+    document.getElementById('dialogue-box').style.display = 'none';
+    return;
+  }
+  dialogueActive = true;
+  const d = dialogueQueue.shift();
+  const box = document.getElementById('dialogue-box');
+  box.querySelector('.speaker').textContent = d.speaker;
+  box.querySelector('.text').textContent = d.text;
+  box.style.display = 'block';
+}
+
+document.getElementById('dialogue-box').addEventListener('click', (e) => {
+  e.stopPropagation();
+  nextDialogue();
+});
+document.getElementById('dialogue-box').addEventListener('touchend', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  nextDialogue();
+});
+
+// ---- Quest System ----
+const QUEST_NAMES = {
+  carmen:   '🕯️ Carmen (Cuernavaca)',
+  piquis:   '🕯️ Piquis (Acapulco)',
+  lupita:   '🕯️ Lupita (Paris)',
+  valerie:  '🕯️ Valérie (Vélizy)',
+  grenoble: '🕯️ Géraldine (Grenoble)',
+  apolline: '🕯️ Apolline (Athis-de-l\'Orne)',
+};
+
+function updateHUD() {
+  if (!gameState) return;
+  const hud = document.getElementById('hud');
+  let html = '<div class="quest-line" style="font-weight:bold;margin-bottom:4px;">🎂 Parle aux personnages avec une bougie</div>';
+  for (const [key, name] of Object.entries(QUEST_NAMES)) {
+    const q = gameState.quests[key];
+    const done = q.status === 'completed';
+    html += `<div class="quest-line${done ? ' completed' : ''}">${done ? '✅' : '⬜'} ${name}</div>`;
+  }
+  hud.innerHTML = html;
+}
+
+function completeQuest(questKey) {
+  if (!gameState.completedQuests.includes(questKey)) {
+    gameState.completedQuests.push(questKey);
+  }
+  // Teleport quest NPCs to Vélizy gathering area
+  teleportQuestNPCsToVelizy(questKey);
+  saveGame();
+  checkAllComplete();
+}
+
+function teleportQuestNPCsToVelizy(questKey) {
+  const vo = regionOrigin('velizy');
+  const gatherX = vo.x + 250;
+  const gatherY = vo.y + 750;
+  const offset = gameState.completedQuests.length * 50;
+
+  const npcMap = {
+    carmen: ['carmen'],
+    piquis: ['piquis', 'erika'],
+    lupita: ['lupita'],
+    valerie: ['valerie'],
+    grenoble: ['geraldine', 'hugo', 'victor'],
+    apolline: ['apolline', 'arthur', 'celeste'],
+  };
+
+  const ids = npcMap[questKey] || [];
+  ids.forEach((id, i) => {
+    const npc = npcs.find(n => n.id === id);
+    if (npc) {
+      npc.x = gatherX + offset + i * 40;
+      npc.y = gatherY + (i % 2) * 30;
+      npc.region = 'velizy';
+    }
+  });
+}
+
+function checkAllComplete() {
+  const allDone = Object.values(gameState.quests).every(q => q.status === 'completed');
+  if (allDone && !gameState.allComplete) {
+    gameState.allComplete = true;
+    saveGame();
+    setTimeout(() => startEndSequence(), 500);
+  }
+}
+
+// ---- Sculpture Mini-Game ----
+const SCULPTURE_PARTS = [
+  // Each part has options (emojis), correct index
+  { label: 'Tête', options: ['💃', '🎩', '👑', '🌺'], correct: 2 }, // crown
+  { label: 'Haut du corps', options: ['💪', '👗', '🎀', '🧥'], correct: 1 }, // dress top
+  { label: 'Bas du corps', options: ['👟', '💃', '🩰', '👖'], correct: 1 }, // dancing
+  { label: 'Pieds', options: ['👢', '🩰', '👠', '🦶'], correct: 1 }, // ballet shoes
+];
+
+let sculptureSelections = [0, 0, 0, 0];
+
+function openSculptureGame() {
+  sculptureSelections = [0, 0, 0, 0];
+  const container = document.getElementById('sculpture-container');
+  container.innerHTML = '';
+  document.getElementById('sculpture-error').textContent = '';
+
+  SCULPTURE_PARTS.forEach((part, i) => {
+    const row = document.createElement('div');
+    row.className = 'sculpture-row';
+
+    const leftBtn = document.createElement('button');
+    leftBtn.className = 'arrow-btn';
+    leftBtn.textContent = '◀';
+    leftBtn.onclick = () => changeSculpturePart(i, -1);
+
+    const display = document.createElement('div');
+    display.className = 'sculpture-part';
+    display.id = `sculpture-part-${i}`;
+    display.textContent = part.options[0];
+
+    const rightBtn = document.createElement('button');
+    rightBtn.className = 'arrow-btn';
+    rightBtn.textContent = '▶';
+    rightBtn.onclick = () => changeSculpturePart(i, 1);
+
+    row.appendChild(leftBtn);
+    row.appendChild(display);
+    row.appendChild(rightBtn);
+    container.appendChild(row);
+  });
+
+  document.getElementById('sculpture-game').style.display = 'flex';
+}
+
+function changeSculpturePart(partIndex, dir) {
+  const part = SCULPTURE_PARTS[partIndex];
+  sculptureSelections[partIndex] = (sculptureSelections[partIndex] + dir + part.options.length) % part.options.length;
+  document.getElementById(`sculpture-part-${partIndex}`).textContent = part.options[sculptureSelections[partIndex]];
+}
+
+document.getElementById('sculpture-validate').addEventListener('click', () => {
+  const correct = SCULPTURE_PARTS.every((part, i) => sculptureSelections[i] === part.correct);
+  if (correct) {
+    document.getElementById('sculpture-game').style.display = 'none';
+    gameState.quests.valerie.sculptureComplete = true;
+    saveGame();
+    showDialogue('Système', 'Sculpture terminée ! Retourne voir Valérie !');
+  } else {
+    document.getElementById('sculpture-error').textContent = "Ce n'est pas tout à fait ça... Essaie encore !";
+  }
+});
+
+// ---- Region detection ----
+function getCurrentRegion(px, py) {
+  for (const [key, r] of Object.entries(REGIONS)) {
+    const ox = r.col * REGION_W;
+    const oy = r.row * REGION_H;
+    if (px >= ox && px < ox + REGION_W && py >= oy && py < oy + REGION_H) {
+      return key;
+    }
+  }
+  return 'velizy';
+}
+
+let lastRegion = 'velizy';
+let regionLabelTimer = 0;
+
+function showRegionLabel(name, emoji) {
+  const label = document.getElementById('region-label');
+  label.textContent = `${emoji} ${name}`;
+  label.style.opacity = '1';
+  regionLabelTimer = 120; // frames
+}
+
+// ---- Save / Load ----
+function saveGame() {
+  const data = {
+    ...gameState,
+    npcPositions: npcs.map(n => ({ id: n.id, x: n.x, y: n.y, region: n.region })),
+    itemStates: items.map(it => ({ id: it.id, picked: it.picked })),
+  };
+  localStorage.setItem('elViaje_save', JSON.stringify(data));
+}
+
+function loadGame() {
+  const raw = localStorage.getItem('elViaje_save');
+  if (!raw) return false;
+  try {
+    const data = JSON.parse(raw);
+    gameState = {
+      playerX: data.playerX,
+      playerY: data.playerY,
+      targetX: null,
+      targetY: null,
+      quests: data.quests,
+      talkedTo: data.talkedTo || {},
+      completedQuests: data.completedQuests || [],
+      allComplete: data.allComplete || false,
+      currentRegion: data.currentRegion || 'velizy',
+    };
+    // Restore NPC positions
+    if (data.npcPositions) {
+      data.npcPositions.forEach(saved => {
+        const npc = npcs.find(n => n.id === saved.id);
+        if (npc) {
+          npc.x = saved.x;
+          npc.y = saved.y;
+          npc.region = saved.region;
+        }
+      });
+    }
+    // Restore item states
+    if (data.itemStates) {
+      data.itemStates.forEach(saved => {
+        const item = items.find(it => it.id === saved.id);
+        if (item) item.picked = saved.picked;
+      });
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function hasSave() {
+  return localStorage.getItem('elViaje_save') !== null;
+}
+
+// ---- End Sequence ----
+let endSequenceActive = false;
+let endSequenceTimer = 0;
+let endDancePhase = 0;
+const END_DANCE_DURATION = 300; // frames
+
+function startEndSequence() {
+  endSequenceActive = true;
+  endSequenceTimer = 0;
+  // Teleport player to gathering area
+  const vo = regionOrigin('velizy');
+  gameState.playerX = vo.x + 350;
+  gameState.playerY = vo.y + 700;
+  gameState.targetX = null;
+  gameState.targetY = null;
+  showRegionLabel('Vélizy', '🎂');
+}
+
+function updateEndSequence() {
+  endSequenceTimer++;
+  endDancePhase = endSequenceTimer;
+  if (endSequenceTimer > END_DANCE_DURATION) {
+    endSequenceActive = false;
+    document.getElementById('end-screen').style.display = 'flex';
+  }
+}
+
+// ---- Collision ----
+function isWalkable(x, y) {
+  // World bounds
+  if (x < 10 || x > WORLD_W - 10 || y < 10 || y > WORLD_H - 10) return false;
+
+  // Building collision (simplified — only block if inside building rect, leaving some margin)
+  for (const b of allBuildings) {
+    const margin = 5;
+    if (x > b.x + margin && x < b.x + b.w - margin && y > b.y + margin && y < b.y + b.h - margin) {
+      // Allow walking in Jardin-Labyrinthe
+      if (b.label === 'Jardin-Labyrinthe') continue;
+      // Allow walking on Place du village
+      if (b.label === 'Place du village') continue;
+      return false;
+    }
+  }
+
+  // Maze wall collision
+  if (isInMazeWall(x, y)) return false;
+
+  return true;
+}
+
+// ---- Input ----
+let inputTarget = null;
+
+function handleInput(clientX, clientY) {
+  if (dialogueActive || endSequenceActive) return;
+  if (document.getElementById('sculpture-game').style.display === 'flex') return;
+
+  const worldX = clientX + camX;
+  const worldY = clientY + camY;
+
+  // Check NPC click
+  for (const npc of npcs) {
+    const dx = worldX - npc.x;
+    const dy = worldY - npc.y;
+    if (Math.sqrt(dx * dx + dy * dy) < NPC_INTERACT_DIST) {
+      // Walk to NPC then interact
+      gameState.targetX = npc.x;
+      gameState.targetY = npc.y;
+      gameState.targetNPC = npc;
+      return;
+    }
+  }
+
+  // Check item click
+  for (const item of items) {
+    if (item.picked) continue;
+    const dx = worldX - item.x;
+    const dy = worldY - item.y;
+    if (Math.sqrt(dx * dx + dy * dy) < ITEM_PICKUP_DIST) {
+      gameState.targetX = item.x;
+      gameState.targetY = item.y;
+      gameState.targetItem = item;
+      return;
+    }
+  }
+
+  // Check téléphérique click
+  const tdx = worldX - TELEPHERIQUE.bottomX;
+  const tdy = worldY - TELEPHERIQUE.bottomY;
+  if (Math.sqrt(tdx * tdx + tdy * tdy) < 80) {
+    // Teleport to top
+    gameState.playerX = TELEPHERIQUE.topX;
+    gameState.playerY = TELEPHERIQUE.topY;
+    gameState.targetX = null;
+    gameState.targetY = null;
+    showDialogue('Système', "🥚 Vous prenez le téléphérique en forme d'œuf vers la Bastille !");
+    return;
+  }
+
+  // Just move
+  gameState.targetX = worldX;
+  gameState.targetY = worldY;
+  gameState.targetNPC = null;
+  gameState.targetItem = null;
+}
+
+canvas.addEventListener('click', (e) => handleInput(e.clientX, e.clientY));
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  const touch = e.touches[0];
+  handleInput(touch.clientX, touch.clientY);
+}, { passive: false });
+
+// ---- Update ----
+function update() {
+  if (!gameState) return;
+  if (endSequenceActive) { updateEndSequence(); return; }
+  if (dialogueActive) return;
+  if (document.getElementById('sculpture-game').style.display === 'flex') return;
+
+  // Move player toward target
+  if (gameState.targetX !== null && gameState.targetY !== null) {
+    const dx = gameState.targetX - gameState.playerX;
+    const dy = gameState.targetY - gameState.playerY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < 5) {
+      gameState.targetX = null;
+      gameState.targetY = null;
+
+      // Interact with NPC
+      if (gameState.targetNPC) {
+        const npc = gameState.targetNPC;
+        gameState.targetNPC = null;
+        const text = npc.dialogue();
+        if (text) showDialogue(npc.name, text);
+        gameState.talkedTo[npc.id] = true;
+        saveGame();
+        updateHUD();
+      }
+      // Pick up item
+      if (gameState.targetItem) {
+        const item = gameState.targetItem;
+        gameState.targetItem = null;
+        pickupItem(item);
+      }
+    } else {
+      const moveX = (dx / dist) * PLAYER_SPEED;
+      const moveY = (dy / dist) * PLAYER_SPEED;
+      const newX = gameState.playerX + moveX;
+      const newY = gameState.playerY + moveY;
+      if (isWalkable(newX, newY)) {
+        gameState.playerX = newX;
+        gameState.playerY = newY;
+      } else if (isWalkable(newX, gameState.playerY)) {
+        gameState.playerX = newX;
+      } else if (isWalkable(gameState.playerX, newY)) {
+        gameState.playerY = newY;
+      } else {
+        gameState.targetX = null;
+        gameState.targetY = null;
+      }
+    }
+  }
+
+  // Region detection
+  const region = getCurrentRegion(gameState.playerX, gameState.playerY);
+  if (region !== lastRegion) {
+    lastRegion = region;
+    gameState.currentRegion = region;
+    const r = REGIONS[region];
+    showRegionLabel(r.name, r.emoji);
+  }
+
+  // Region label fade
+  if (regionLabelTimer > 0) {
+    regionLabelTimer--;
+    if (regionLabelTimer === 0) {
+      document.getElementById('region-label').style.opacity = '0';
+    }
+  }
+
+  // Auto-pickup items when walking near
+  for (const item of items) {
+    if (item.picked) continue;
+    const dx = gameState.playerX - item.x;
+    const dy = gameState.playerY - item.y;
+    if (Math.sqrt(dx * dx + dy * dy) < ITEM_PICKUP_DIST) {
+      pickupItem(item);
+    }
+  }
+
+  updateCamera();
+}
+
+function pickupItem(item) {
+  if (item.picked) return;
+  item.picked = true;
+
+  if (item.type === 'tortilla') {
+    gameState.quests.carmen.tortillas++;
+    showDialogue('Système', `🫓 Tortilla trouvée ! (${gameState.quests.carmen.tortillas}/3)`);
+  } else if (item.type === 'sac') {
+    gameState.quests.lupita.hasSac = true;
+    showDialogue('Système', '👜 Sac Lancel trouvé !');
+  }
+  saveGame();
+  updateHUD();
+}
+
+// ---- Rendering ----
+function drawGround() {
+  // Draw each region with its color
+  for (const [key, r] of Object.entries(REGIONS)) {
+    const ox = r.col * REGION_W;
+    const oy = r.row * REGION_H;
+    const sx = ox - camX;
+    const sy = oy - camY;
+
+    // Skip if off-screen
+    if (sx + REGION_W < 0 || sx > canvas.width || sy + REGION_H < 0 || sy > canvas.height) continue;
+
+    // Ground
+    ctx.fillStyle = r.color;
+    ctx.fillRect(sx, sy, REGION_W, REGION_H);
+
+    // Subtle ground texture dots
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    const startTileX = Math.max(0, Math.floor(-sx / TILE));
+    const endTileX = Math.min(40, Math.ceil((canvas.width - sx) / TILE));
+    const startTileY = Math.max(0, Math.floor(-sy / TILE));
+    const endTileY = Math.min(30, Math.ceil((canvas.height - sy) / TILE));
+    for (let tx = startTileX; tx < endTileX; tx += 2) {
+      for (let ty = startTileY; ty < endTileY; ty += 2) {
+        ctx.fillRect(sx + tx * TILE + 19, sy + ty * TILE + 19, 3, 3);
+      }
+    }
+
+    // Region border
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(sx, sy, REGION_W, REGION_H);
+
+    // Region name in corner
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = 'bold 18px Georgia';
+    ctx.fillText(`${r.emoji} ${r.name}`, sx + 10, sy + 25);
+
+    // Directional signs at borders
+    ctx.font = '13px Georgia';
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.textAlign = 'center';
+    // Right border sign
+    if (r.col < 2) {
+      const rightRegion = Object.values(REGIONS).find(rr => rr.col === r.col + 1 && rr.row === r.row);
+      if (rightRegion) ctx.fillText(`→ ${rightRegion.name}`, sx + REGION_W - 60, sy + REGION_H / 2);
+    }
+    // Left border sign
+    if (r.col > 0) {
+      const leftRegion = Object.values(REGIONS).find(rr => rr.col === r.col - 1 && rr.row === r.row);
+      if (leftRegion) ctx.fillText(`← ${leftRegion.name}`, sx + 60, sy + REGION_H / 2);
+    }
+    // Bottom border sign
+    if (r.row < 1) {
+      const bottomRegion = Object.values(REGIONS).find(rr => rr.col === r.col && rr.row === r.row + 1);
+      if (bottomRegion) ctx.fillText(`↓ ${bottomRegion.name}`, sx + REGION_W / 2, sy + REGION_H - 15);
+    }
+    // Top border sign
+    if (r.row > 0) {
+      const topRegion = Object.values(REGIONS).find(rr => rr.col === r.col && rr.row === r.row - 1);
+      if (topRegion) ctx.fillText(`↑ ${topRegion.name}`, sx + REGION_W / 2, sy + 25);
+    }
+    ctx.textAlign = 'left';
+
+    // Special: ocean in Acapulco (right side)
+    if (key === 'acapulco') {
+      ctx.fillStyle = '#2070a0';
+      ctx.fillRect(sx + REGION_W - 300, sy, 300, REGION_H);
+      // Waves
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 2;
+      for (let wy = 0; wy < REGION_H; wy += 40) {
+        ctx.beginPath();
+        for (let wx = REGION_W - 300; wx < REGION_W; wx += 10) {
+          const waveY = sy + wy + Math.sin((wx + Date.now() * 0.002) * 0.1) * 5;
+          if (wx === REGION_W - 300) ctx.moveTo(sx + wx, waveY);
+          else ctx.lineTo(sx + wx, waveY);
+        }
+        ctx.stroke();
+      }
+    }
+
+    // Special: mountain gradient in Grenoble (upper half)
+    if (key === 'grenoble') {
+      const grad = ctx.createLinearGradient(sx, sy, sx, sy + REGION_H * 0.6);
+      grad.addColorStop(0, '#4a5a3a');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.fillRect(sx, sy, REGION_W, REGION_H * 0.6);
+
+      // Mountain path (zigzag line)
+      ctx.strokeStyle = '#8a7a6a';
+      ctx.lineWidth = 30;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(sx + 550, sy + 700);
+      ctx.lineTo(sx + 400, sy + 550);
+      ctx.lineTo(sx + 650, sy + 450);
+      ctx.lineTo(sx + 350, sy + 350);
+      ctx.lineTo(sx + 600, sy + 250);
+      ctx.stroke();
+
+      // Téléphérique cable
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(sx + 550, sy + 700);
+      ctx.lineTo(sx + 550, sy + 250);
+      ctx.stroke();
+
+      // Egg cabins
+      const eggY = sy + 450 + Math.sin(Date.now() * 0.001) * 20;
+      ctx.fillStyle = '#e8d5b7';
+      ctx.beginPath();
+      ctx.ellipse(sx + 550, eggY, 15, 20, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#8a7a6a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+}
+
+function drawBuildings() {
+  for (const b of allBuildings) {
+    const sx = b.x - camX;
+    const sy = b.y - camY;
+    if (sx + b.w < 0 || sx > canvas.width || sy + b.h < 0 || sy > canvas.height) continue;
+
+    ctx.fillStyle = b.color;
+    ctx.fillRect(sx, sy, b.w, b.h);
+
+    // Roof/outline
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(sx, sy, b.w, b.h);
+
+    // Label
+    ctx.fillStyle = b.labelColor;
+    ctx.font = 'bold 12px Georgia';
+    ctx.textAlign = 'center';
+    ctx.fillText(b.label, sx + b.w / 2, sy + b.h / 2 + 5);
+    ctx.textAlign = 'left';
+  }
+}
+
+function drawMaze() {
+  for (let r = 0; r < MAZE_ROWS; r++) {
+    for (let c = 0; c < MAZE_COLS; c++) {
+      const wx = MAZE_ORIGIN_X + c * MAZE_CELL;
+      const wy = MAZE_ORIGIN_Y + r * MAZE_CELL;
+      const sx = wx - camX;
+      const sy = wy - camY;
+
+      if (sx + MAZE_CELL < 0 || sx > canvas.width || sy + MAZE_CELL < 0 || sy > canvas.height) continue;
+
+      if (MAZE_GRID[r][c] === 1) {
+        // Hedge wall
+        ctx.fillStyle = '#2a5a1a';
+        ctx.fillRect(sx, sy, MAZE_CELL, MAZE_CELL);
+        ctx.strokeStyle = '#1a4a0a';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(sx, sy, MAZE_CELL, MAZE_CELL);
+        // Leaf texture
+        ctx.fillStyle = '#3a7a2a';
+        ctx.beginPath();
+        ctx.arc(sx + 15, sy + 15, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(sx + 35, sy + 25, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // Maze decorations
+  for (const d of mazeDecos) {
+    const sx = d.x - camX;
+    const sy = d.y - camY;
+    if (sx < -30 || sx > canvas.width + 30 || sy < -30 || sy > canvas.height + 30) continue;
+    ctx.font = '20px serif';
+    ctx.textAlign = 'center';
+    let emoji = '🥕';
+    if (d.type === 'camembert') emoji = '🧀';
+    else if (d.type === 'cow') emoji = '🐄';
+    else if (d.type === 'veggie') emoji = '🥬';
+    ctx.fillText(emoji, sx, sy + 6);
+    ctx.textAlign = 'left';
+  }
+}
+
+function drawDecorations() {
+  for (const d of allDecorations) {
+    const sx = d.x - camX;
+    const sy = d.y - camY;
+    if (sx < -30 || sx > canvas.width + 30 || sy < -30 || sy > canvas.height + 30) continue;
+
+    ctx.font = '24px serif';
+    ctx.textAlign = 'center';
+
+    switch (d.type) {
+      case 'tree':
+        ctx.fillText('🌳', sx, sy);
+        break;
+      case 'cactus':
+        ctx.fillText('🌵', sx, sy);
+        break;
+      case 'palm':
+        ctx.fillText('🌴', sx, sy);
+        break;
+      case 'rock':
+        ctx.fillText('🪨', sx, sy);
+        break;
+      case 'cow':
+        ctx.fillText('🐄', sx, sy);
+        break;
+    }
+    ctx.textAlign = 'left';
+  }
+}
+
+function drawItems() {
+  for (const item of items) {
+    if (item.picked) continue;
+    const sx = item.x - camX;
+    const sy = item.y - camY;
+    if (sx < -30 || sx > canvas.width + 30 || sy < -30 || sy > canvas.height + 30) continue;
+
+    // Floating animation
+    const floatY = Math.sin(Date.now() * 0.003 + item.x) * 5;
+    ctx.font = '28px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(item.emoji, sx, sy + floatY);
+
+    // Glow
+    ctx.beginPath();
+    ctx.arc(sx, sy + floatY - 5, 18, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 220, 100, 0.15)';
+    ctx.fill();
+    ctx.textAlign = 'left';
+  }
+}
+
+function drawNPCs() {
+  for (const npc of npcs) {
+    const sx = npc.x - camX;
+    const sy = npc.y - camY;
+    if (sx < -40 || sx > canvas.width + 40 || sy < -40 || sy > canvas.height + 40) continue;
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(sx, sy + 16, 12, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Body
+    ctx.fillStyle = npc.color;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Emoji face
+    ctx.font = '18px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(npc.emoji, sx, sy + 6);
+
+    // Candle
+    if (npc.hasCandle) {
+      ctx.font = '14px serif';
+      ctx.fillText('🕯️', sx + 16, sy - 10);
+    }
+
+    // Name
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px Georgia';
+    ctx.fillText(npc.name, sx, sy - 22);
+    ctx.textAlign = 'left';
+
+    // Dance animation during end sequence
+    if (endSequenceActive) {
+      const angle = (Date.now() * 0.005 + npc.x) % (Math.PI * 2);
+      const danceX = Math.cos(angle) * 8;
+      const danceY = Math.sin(angle * 2) * 4;
+      npc.x += danceX * 0.02;
+      npc.y += danceY * 0.02;
+    }
+  }
+}
+
+function drawPlayer() {
+  const sx = gameState.playerX - camX;
+  const sy = gameState.playerY - camY;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath();
+  ctx.ellipse(sx, sy + 18, 14, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Body
+  ctx.fillStyle = '#f5c842';
+  ctx.beginPath();
+  ctx.arc(sx, sy, 16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#c9a020';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Face
+  ctx.font = '20px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('👩', sx, sy + 7);
+
+  // Name
+  ctx.fillStyle = '#f5c842';
+  ctx.font = 'bold 12px Georgia';
+  ctx.fillText('Ana Lucila', sx, sy - 24);
+  ctx.textAlign = 'left';
+
+  // Movement indicator
+  if (gameState.targetX !== null) {
+    ctx.fillStyle = 'rgba(245, 200, 66, 0.4)';
+    ctx.beginPath();
+    const tx = gameState.targetX - camX;
+    const ty = gameState.targetY - camY;
+    ctx.arc(tx, ty, 8 + Math.sin(Date.now() * 0.005) * 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawEndSequenceCake() {
+  if (!endSequenceActive) return;
+  const vo = regionOrigin('velizy');
+  const cx = vo.x + 350 - camX;
+  const cy = vo.y + 750 - camY;
+
+  // Big cake
+  ctx.font = '60px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🎂', cx, cy + 20);
+
+  // Candles around cake
+  for (let i = 0; i < 7; i++) {
+    const angle = (i / 7) * Math.PI * 2 + Date.now() * 0.002;
+    const radius = 50;
+    const candleX = cx + Math.cos(angle) * radius;
+    const candleY = cy + Math.sin(angle) * radius;
+    ctx.font = '20px serif';
+    ctx.fillText('🕯️', candleX, candleY);
+  }
+
+  // Confetti
+  for (let i = 0; i < 30; i++) {
+    const t = Date.now() * 0.001 + i * 100;
+    const confX = cx + Math.sin(t + i) * (80 + i * 3);
+    const confY = cy - 80 + Math.cos(t * 0.5 + i) * 40 + (endSequenceTimer * 0.5) % 100;
+    ctx.fillStyle = ['#f5c842', '#e07050', '#70b0e0', '#a070c0', '#4a9e4a'][i % 5];
+    ctx.fillRect(confX, confY, 6, 6);
+  }
+
+  ctx.textAlign = 'left';
+}
+
+function drawTelePheriqueButton() {
+  // Draw clickable egg at bottom station
+  const region = getCurrentRegion(gameState.playerX, gameState.playerY);
+  if (region !== 'grenoble') return;
+
+  const sx = TELEPHERIQUE.bottomX - camX;
+  const sy = TELEPHERIQUE.bottomY - camY;
+
+  ctx.font = '30px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🥚', sx, sy + 10);
+  ctx.fillStyle = '#ff0';
+  ctx.font = 'bold 11px Georgia';
+  ctx.fillText('Téléphérique', sx, sy + 30);
+  ctx.textAlign = 'left';
+}
+
+// ---- Mini-map ----
+const minimapCanvas = document.getElementById('minimap-canvas');
+const mctx = minimapCanvas.getContext('2d');
+const MM_W = 160, MM_H = 106;
+const MM_SCALE_X = MM_W / WORLD_W;
+const MM_SCALE_Y = MM_H / WORLD_H;
+
+function drawMinimap() {
+  mctx.clearRect(0, 0, MM_W, MM_H);
+  // Regions
+  for (const [key, r] of Object.entries(REGIONS)) {
+    const rx = r.col * REGION_W * MM_SCALE_X;
+    const ry = r.row * REGION_H * MM_SCALE_Y;
+    const rw = REGION_W * MM_SCALE_X;
+    const rh = REGION_H * MM_SCALE_Y;
+    mctx.fillStyle = r.color;
+    mctx.fillRect(rx, ry, rw, rh);
+    mctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    mctx.lineWidth = 0.5;
+    mctx.strokeRect(rx, ry, rw, rh);
+    // Region name
+    mctx.fillStyle = 'rgba(255,255,255,0.7)';
+    mctx.font = '6px Georgia';
+    mctx.textAlign = 'center';
+    mctx.fillText(r.name, rx + rw/2, ry + rh/2 + 2);
+  }
+  // NPCs as dots
+  for (const npc of npcs) {
+    if (npc.hasCandle) {
+      mctx.fillStyle = '#f5c842';
+      mctx.beginPath();
+      mctx.arc(npc.x * MM_SCALE_X, npc.y * MM_SCALE_Y, 2, 0, Math.PI * 2);
+      mctx.fill();
+    }
+  }
+  // Player
+  mctx.fillStyle = '#ff4444';
+  mctx.beginPath();
+  mctx.arc(gameState.playerX * MM_SCALE_X, gameState.playerY * MM_SCALE_Y, 3, 0, Math.PI * 2);
+  mctx.fill();
+  mctx.strokeStyle = '#fff';
+  mctx.lineWidth = 1;
+  mctx.stroke();
+  mctx.textAlign = 'left';
+}
+
+// ---- Main render ----
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawGround();
+  drawBuildings();
+  drawMaze();
+  drawDecorations();
+  drawItems();
+  drawTelePheriqueButton();
+  drawNPCs();
+  drawPlayer();
+  drawEndSequenceCake();
+  drawMinimap();
+}
+
+// ---- Game Loop ----
+let running = false;
+
+function gameLoop() {
+  if (!running) return;
+  update();
+  render();
+  updateHUD();
+  requestAnimationFrame(gameLoop);
+}
+
+// ---- Start Game ----
+function startGame(isNew) {
+  buildWorld();
+  initMazeDecos();
+  npcs = createNPCs();
+  items = createItems();
+
+  if (isNew) {
+    gameState = newGameState();
+  } else {
+    gameState = newGameState(); // default
+    loadGame(); // overwrite with saved
+  }
+
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('hud').style.display = 'block';
+  document.getElementById('minimap').style.display = 'block';
+  updateCamera();
+  updateHUD();
+  running = true;
+
+  if (isNew) {
+    setTimeout(() => {
+      showDialogue('Gérard', 'Joyeux anniversaire ! Tu as parlé à tout le monde ? Va voir les personnages avec une bougie dans chaque région !');
+    }, 300);
+  }
+
+  gameLoop();
+}
+
+// ---- UI Events ----
+document.getElementById('btn-new').addEventListener('click', () => {
+  localStorage.removeItem('elViaje_save');
+  startGame(true);
+});
+
+document.getElementById('btn-continue').addEventListener('click', () => {
+  startGame(false);
+});
+
+document.getElementById('btn-restart').addEventListener('click', () => {
+  document.getElementById('end-screen').style.display = 'none';
+  localStorage.removeItem('elViaje_save');
+  running = false;
+  endSequenceActive = false;
+  dialogueQueue = [];
+  dialogueActive = false;
+  document.getElementById('dialogue-box').style.display = 'none';
+  document.getElementById('start-screen').style.display = 'flex';
+  checkContinueButton();
+});
+
+function checkContinueButton() {
+  document.getElementById('btn-continue').disabled = !hasSave();
+}
+checkContinueButton();
+</script>
+</body>
+</html>
