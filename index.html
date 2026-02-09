@@ -74,7 +74,7 @@ canvas { display: block; cursor: pointer; touch-action: none; }
   width: clamp(80px, 20vw, 140px); height: clamp(50px, 10vw, 70px);
   background: #3a3a5c; border: 2px solid #c9a96e; border-radius: 6px;
   display: flex; align-items: center; justify-content: center;
-  font-size: clamp(22px, 5vw, 40px); user-select: none;
+  font-size: clamp(16px, 4vw, 26px); user-select: none;
 }
 #sculpture-game .arrow-btn {
   width: 40px; height: 40px; background: #c9a96e; border: none; border-radius: 50%;
@@ -207,7 +207,7 @@ const WORLD_H = 2 * REGION_H; // 2400
 const REGIONS = {
   velizy:      { col: 0, row: 0, name: 'Vélizy',          emoji: '🏫', color: '#4a7c59' },
   cuernavaca:  { col: 1, row: 0, name: 'Cuernavaca',      emoji: '🇲🇽', color: '#c4a35a' },
-  acapulco:    { col: 2, row: 0, name: 'Acapulco',        emoji: '🏖️', color: '#3a8a9e' },
+  acapulco:    { col: 2, row: 0, name: 'Acapulco',        emoji: '🏖️', color: '#d4b876' },
   paris:       { col: 0, row: 1, name: 'Paris',           emoji: '🇫🇷', color: '#6a6a8a' },
   grenoble:    { col: 1, row: 1, name: 'Grenoble',        emoji: '⛰️', color: '#5a7a5a' },
   athis:       { col: 2, row: 1, name: "Athis-de-l'Orne", emoji: '🐄', color: '#6a9a4a' },
@@ -278,93 +278,184 @@ function getRegionBuildings(regionKey) {
   switch (regionKey) {
     case 'velizy': {
       // School
-      buildings.push({ x: ox+200, y: oy+200, w: 200, h: 120, color: '#8B7355', label: 'École', labelColor: '#fff' });
+      buildings.push({ x: ox+200, y: oy+200, w: 200, h: 120, color: '#8B7355', label: 'École', labelColor: '#fff', type: 'school' });
       // Houses
-      buildings.push({ x: ox+600, y: oy+100, w: 100, h: 80, color: '#a08060', label: 'Maison', labelColor: '#fff' });
-      buildings.push({ x: ox+800, y: oy+300, w: 120, h: 80, color: '#907050', label: 'Maison', labelColor: '#fff' });
-      buildings.push({ x: ox+1000, y: oy+150, w: 140, h: 100, color: '#b09070', label: 'Boulangerie', labelColor: '#fff' });
-      buildings.push({ x: ox+500, y: oy+600, w: 160, h: 100, color: '#807060', label: 'Parc', labelColor: '#fff' });
+      buildings.push({ x: ox+600, y: oy+100, w: 100, h: 80, color: '#a08060', label: 'Maison', labelColor: '#fff', type: 'house' });
+      buildings.push({ x: ox+800, y: oy+300, w: 120, h: 80, color: '#907050', label: 'Maison', labelColor: '#fff', type: 'house' });
+      buildings.push({ x: ox+1000, y: oy+150, w: 140, h: 100, color: '#b09070', label: 'Boulangerie', labelColor: '#fff', type: 'shop' });
+      buildings.push({ x: ox+500, y: oy+600, w: 160, h: 100, color: '#5a8a4a', label: 'Parc', labelColor: '#fff', type: 'park' });
       // Gathering area (for finale)
-      buildings.push({ x: ox+250, y: oy+700, w: 200, h: 20, color: '#6a5a4a', label: 'Place du village', labelColor: '#ddd' });
-      // Trees
-      for (let i = 0; i < 15; i++) {
-        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*1000, type: 'tree' });
+      buildings.push({ x: ox+250, y: oy+700, w: 200, h: 20, color: '#6a5a4a', label: 'Place du village', labelColor: '#ddd', type: 'plaza' });
+      // Trees scattered around
+      for (let i = 0; i < 25; i++) {
+        decorations.push({ x: ox + 80 + seededRandom()*1400, y: oy + 80 + seededRandom()*1050, type: 'tree' });
+      }
+      // Flowers
+      for (let i = 0; i < 20; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 50 + seededRandom()*1100, type: 'flower' });
+      }
+      // Benches
+      for (let i = 0; i < 5; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1300, y: oy + 200 + seededRandom()*800, type: 'bench' });
+      }
+      // Lamp posts
+      for (let i = 0; i < 6; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*1000, type: 'lamp' });
+      }
+      // Bushes
+      for (let i = 0; i < 12; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 50 + seededRandom()*1100, type: 'bush' });
       }
       break;
     }
     case 'cuernavaca': {
       // Sombrero shop
-      buildings.push({ x: ox+300, y: oy+300, w: 180, h: 120, color: '#d4a050', label: 'Boutique Sombreros', labelColor: '#fff' });
+      buildings.push({ x: ox+300, y: oy+300, w: 180, h: 120, color: '#d4a050', label: 'Boutique Sombreros', labelColor: '#fff', type: 'mexican' });
       // Market
-      buildings.push({ x: ox+700, y: oy+200, w: 200, h: 100, color: '#c09040', label: 'Mercado', labelColor: '#fff' });
-      buildings.push({ x: ox+600, y: oy+600, w: 140, h: 90, color: '#b08030', label: 'Cantina', labelColor: '#fff' });
-      buildings.push({ x: ox+1000, y: oy+400, w: 120, h: 80, color: '#a07030', label: 'Casa', labelColor: '#fff' });
+      buildings.push({ x: ox+700, y: oy+200, w: 200, h: 100, color: '#c09040', label: 'Mercado', labelColor: '#fff', type: 'mexican' });
+      buildings.push({ x: ox+600, y: oy+600, w: 140, h: 90, color: '#b08030', label: 'Cantina', labelColor: '#fff', type: 'mexican' });
+      buildings.push({ x: ox+1000, y: oy+400, w: 120, h: 80, color: '#a07030', label: 'Casa', labelColor: '#fff', type: 'house' });
+      buildings.push({ x: ox+200, y: oy+700, w: 100, h: 70, color: '#c07840', label: 'Iglesia', labelColor: '#fff', type: 'mexican' });
       // Cacti
-      for (let i = 0; i < 12; i++) {
-        decorations.push({ x: ox + 80 + seededRandom()*1400, y: oy + 80 + seededRandom()*1000, type: 'cactus' });
+      for (let i = 0; i < 18; i++) {
+        decorations.push({ x: ox + 60 + seededRandom()*1450, y: oy + 60 + seededRandom()*1050, type: 'cactus' });
+      }
+      // Flowers (bougainvillea)
+      for (let i = 0; i < 15; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 50 + seededRandom()*1100, type: 'bougainvillea' });
+      }
+      // Pottery / jars
+      for (let i = 0; i < 8; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*1000, type: 'pottery' });
+      }
+      // Sombrero decorations
+      for (let i = 0; i < 4; i++) {
+        decorations.push({ x: ox + 200 + seededRandom()*1200, y: oy + 200 + seededRandom()*800, type: 'sombrero' });
       }
       break;
     }
     case 'acapulco': {
       // Hotel
-      buildings.push({ x: ox+300, y: oy+200, w: 260, h: 160, color: '#e0c080', label: 'Hôtel Acapulco Princess', labelColor: '#333' });
-      // Beach
-      buildings.push({ x: ox+800, y: oy+100, w: 300, h: 80, color: '#f0d090', label: 'Plage', labelColor: '#555' });
-      buildings.push({ x: ox+600, y: oy+500, w: 140, h: 90, color: '#d0b070', label: 'Restaurant', labelColor: '#fff' });
+      buildings.push({ x: ox+300, y: oy+200, w: 260, h: 160, color: '#e0c080', label: 'Hôtel Acapulco Princess', labelColor: '#333', type: 'hotel' });
+      // Beach bar
+      buildings.push({ x: ox+600, y: oy+500, w: 140, h: 90, color: '#d0b070', label: 'Restaurant', labelColor: '#fff', type: 'mexican' });
+      buildings.push({ x: ox+150, y: oy+500, w: 100, h: 70, color: '#c8a060', label: 'Bar de plage', labelColor: '#fff', type: 'shop' });
       // Palm trees
-      for (let i = 0; i < 10; i++) {
-        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 80 + seededRandom()*1000, type: 'palm' });
+      for (let i = 0; i < 18; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*950, y: oy + 50 + seededRandom()*1100, type: 'palm' });
       }
-      // Ocean at right side
+      // Beach umbrellas
+      for (let i = 0; i < 8; i++) {
+        decorations.push({ x: ox + 800 + seededRandom()*400, y: oy + 100 + seededRandom()*800, type: 'umbrella' });
+      }
+      // Shells
+      for (let i = 0; i < 12; i++) {
+        decorations.push({ x: ox + 700 + seededRandom()*500, y: oy + 50 + seededRandom()*1100, type: 'shell' });
+      }
+      // Seagulls
+      for (let i = 0; i < 6; i++) {
+        decorations.push({ x: ox + 200 + seededRandom()*1200, y: oy + 50 + seededRandom()*400, type: 'seagull' });
+      }
+      // Flowers
+      for (let i = 0; i < 10; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*800, y: oy + 100 + seededRandom()*1000, type: 'tropical_flower' });
+      }
       break;
     }
     case 'paris': {
       // Aero Mexico office
-      buildings.push({ x: ox+300, y: oy+300, w: 220, h: 130, color: '#7a7a9a', label: 'Bureau Aero Mexico', labelColor: '#fff' });
+      buildings.push({ x: ox+300, y: oy+300, w: 220, h: 130, color: '#7a7a9a', label: 'Bureau Aero Mexico', labelColor: '#fff', type: 'parisian' });
       // Lancel shop
-      buildings.push({ x: ox+900, y: oy+400, w: 160, h: 100, color: '#9a8a7a', label: 'Boutique Lancel', labelColor: '#fff' });
+      buildings.push({ x: ox+900, y: oy+400, w: 160, h: 100, color: '#9a8a7a', label: 'Boutique Lancel', labelColor: '#fff', type: 'parisian' });
       // Eiffel-ish
-      buildings.push({ x: ox+600, y: oy+100, w: 80, h: 200, color: '#8a8a8a', label: 'Tour Eiffel', labelColor: '#ddd' });
-      buildings.push({ x: ox+200, y: oy+600, w: 130, h: 90, color: '#6a6a7a', label: 'Café', labelColor: '#fff' });
-      buildings.push({ x: ox+1100, y: oy+200, w: 120, h: 80, color: '#7a6a5a', label: 'Brasserie', labelColor: '#fff' });
-      // Trees
+      buildings.push({ x: ox+600, y: oy+100, w: 80, h: 200, color: '#8a8a8a', label: 'Tour Eiffel', labelColor: '#ddd', type: 'eiffel' });
+      buildings.push({ x: ox+200, y: oy+600, w: 130, h: 90, color: '#6a6a7a', label: 'Café', labelColor: '#fff', type: 'parisian' });
+      buildings.push({ x: ox+1100, y: oy+200, w: 120, h: 80, color: '#7a6a5a', label: 'Brasserie', labelColor: '#fff', type: 'parisian' });
+      buildings.push({ x: ox+1000, y: oy+700, w: 110, h: 80, color: '#6a7a8a', label: 'Librairie', labelColor: '#fff', type: 'parisian' });
+      // Trees (plane trees like in Paris)
+      for (let i = 0; i < 14; i++) {
+        decorations.push({ x: ox + 80 + seededRandom()*1400, y: oy + 80 + seededRandom()*1050, type: 'plane_tree' });
+      }
+      // Lamp posts (réverbères)
+      for (let i = 0; i < 10; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 50 + seededRandom()*1100, type: 'paris_lamp' });
+      }
+      // Pigeons
       for (let i = 0; i < 8; i++) {
-        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*1000, type: 'tree' });
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*1000, type: 'pigeon' });
+      }
+      // Café tables
+      for (let i = 0; i < 6; i++) {
+        decorations.push({ x: ox + 150 + seededRandom()*1300, y: oy + 400 + seededRandom()*700, type: 'cafe_table' });
+      }
+      // Flowers
+      for (let i = 0; i < 8; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 50 + seededRandom()*1100, type: 'flower' });
       }
       break;
     }
     case 'grenoble': {
       // Bottom area - city
-      buildings.push({ x: ox+200, y: oy+800, w: 180, h: 100, color: '#6a7a6a', label: 'Gare', labelColor: '#fff' });
-      buildings.push({ x: ox+600, y: oy+900, w: 150, h: 90, color: '#5a6a5a', label: 'Maison', labelColor: '#fff' });
+      buildings.push({ x: ox+200, y: oy+800, w: 180, h: 100, color: '#6a7a6a', label: 'Gare', labelColor: '#fff', type: 'house' });
+      buildings.push({ x: ox+600, y: oy+900, w: 150, h: 90, color: '#5a6a5a', label: 'Maison', labelColor: '#fff', type: 'house' });
       // Téléphérique station bottom
-      buildings.push({ x: ox+500, y: oy+700, w: 100, h: 60, color: '#8a7a5a', label: 'Téléphérique ↑', labelColor: '#ff0' });
-      // Mountain path (visual only, walkable)
+      buildings.push({ x: ox+500, y: oy+700, w: 100, h: 60, color: '#8a7a5a', label: 'Téléphérique ↑', labelColor: '#ff0', type: 'station' });
       // Bastille at top
-      buildings.push({ x: ox+500, y: oy+100, w: 200, h: 120, color: '#7a8a6a', label: 'La Bastille', labelColor: '#fff' });
-      // Mountain decorations
-      for (let i = 0; i < 20; i++) {
-        decorations.push({ x: ox + 80 + seededRandom()*1400, y: oy + 50 + seededRandom()*600, type: 'rock' });
+      buildings.push({ x: ox+500, y: oy+100, w: 200, h: 120, color: '#7a8a6a', label: 'La Bastille', labelColor: '#fff', type: 'castle' });
+      buildings.push({ x: ox+900, y: oy+850, w: 130, h: 80, color: '#5a7a6a', label: 'Fromagerie', labelColor: '#fff', type: 'shop' });
+      // Mountain rocks
+      for (let i = 0; i < 30; i++) {
+        decorations.push({ x: ox + 60 + seededRandom()*1450, y: oy + 30 + seededRandom()*650, type: 'rock' });
       }
-      for (let i = 0; i < 10; i++) {
+      // Pine trees
+      for (let i = 0; i < 20; i++) {
+        decorations.push({ x: ox + 60 + seededRandom()*1450, y: oy + 50 + seededRandom()*1100, type: 'pine' });
+      }
+      // Trees in valley
+      for (let i = 0; i < 12; i++) {
         decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 600 + seededRandom()*500, type: 'tree' });
+      }
+      // Wildflowers
+      for (let i = 0; i < 15; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 300 + seededRandom()*800, type: 'wildflower' });
+      }
+      // Snow patches on top
+      for (let i = 0; i < 6; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 20 + seededRandom()*200, type: 'snow' });
       }
       break;
     }
     case 'athis': {
       // Mairie
-      buildings.push({ x: ox+300, y: oy+200, w: 200, h: 130, color: '#8a9a7a', label: 'Mairie', labelColor: '#fff' });
+      buildings.push({ x: ox+300, y: oy+200, w: 200, h: 130, color: '#8a9a7a', label: 'Mairie', labelColor: '#fff', type: 'house' });
       // Maze area (visual indicator)
-      buildings.push({ x: ox+700, y: oy+300, w: 500, h: 500, color: '#3a5a2a', label: 'Jardin-Labyrinthe', labelColor: '#cfc' });
+      buildings.push({ x: ox+700, y: oy+300, w: 500, h: 500, color: '#3a5a2a', label: 'Jardin-Labyrinthe', labelColor: '#cfc', type: 'garden' });
       // Farms
-      buildings.push({ x: ox+200, y: oy+600, w: 120, h: 80, color: '#7a8a5a', label: 'Ferme', labelColor: '#fff' });
-      // Cows and decorations
-      for (let i = 0; i < 8; i++) {
-        decorations.push({ x: ox + 100 + seededRandom()*500, y: oy + 400 + seededRandom()*700, type: 'cow' });
+      buildings.push({ x: ox+200, y: oy+600, w: 120, h: 80, color: '#7a8a5a', label: 'Ferme', labelColor: '#fff', type: 'farm' });
+      buildings.push({ x: ox+100, y: oy+850, w: 110, h: 70, color: '#8a7a5a', label: 'Étable', labelColor: '#fff', type: 'farm' });
+      buildings.push({ x: ox+400, y: oy+900, w: 100, h: 70, color: '#6a8a5a', label: 'Fromagerie', labelColor: '#fff', type: 'shop' });
+      // Cows
+      for (let i = 0; i < 10; i++) {
+        decorations.push({ x: ox + 80 + seededRandom()*550, y: oy + 350 + seededRandom()*750, type: 'cow' });
       }
+      // Trees
+      for (let i = 0; i < 18; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 50 + seededRandom()*1100, type: 'tree' });
+      }
+      // Hay bales
       for (let i = 0; i < 6; i++) {
-        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*1000, type: 'tree' });
+        decorations.push({ x: ox + 100 + seededRandom()*500, y: oy + 500 + seededRandom()*600, type: 'hay' });
       }
+      // Flowers
+      for (let i = 0; i < 15; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 50 + seededRandom()*1100, type: 'wildflower' });
+      }
+      // Fences
+      for (let i = 0; i < 8; i++) {
+        decorations.push({ x: ox + 50 + seededRandom()*600, y: oy + 400 + seededRandom()*700, type: 'fence' });
+      }
+      // Pond
+      decorations.push({ x: ox + 450, y: oy + 500, type: 'pond' });
       break;
     }
   }
@@ -458,7 +549,7 @@ function createNPCs() {
     // Vélizy
     {
       id: 'gerard', name: 'Gérard', region: 'velizy',
-      x: vo.x + 350, y: vo.y + 450, color: '#e07050',
+      x: vo.x + 650, y: vo.y + 200, color: '#e07050',
       emoji: '👴', hasCandle: false,
       dialogue: () => {
         if (gameState.allComplete) return "Joyeux anniversaire ! Tout le monde est là !";
@@ -575,7 +666,7 @@ function createNPCs() {
     // Géraldine at top
     {
       id: 'geraldine', name: 'Géraldine', region: 'grenoble',
-      x: go.x + 550, y: go.y + 160, color: '#d070b0',
+      x: go.x + 550, y: go.y + 250, color: '#d070b0',
       emoji: '👩', hasCandle: true, quest: 'grenoble',
       dialogue: () => {
         const q = gameState.quests.grenoble;
@@ -588,13 +679,13 @@ function createNPCs() {
     },
     {
       id: 'hugo', name: 'Hugo', region: 'grenoble',
-      x: go.x + 650, y: go.y + 180, color: '#5080c0',
+      x: go.x + 650, y: go.y + 260, color: '#5080c0',
       emoji: '👨', hasCandle: false,
       dialogue: () => "Joyeux anniversaire !",
     },
     {
       id: 'victor', name: 'Petit Victor', region: 'grenoble',
-      x: go.x + 600, y: go.y + 220, color: '#80c080',
+      x: go.x + 600, y: go.y + 280, color: '#80c080',
       emoji: '👶', hasCandle: false,
       dialogue: () => "Grooa ! Joyeux anniversaire Abue !",
     },
@@ -638,7 +729,7 @@ function createNPCs() {
     {
       id: 'celeste', name: 'Bébé Céleste', region: 'athis',
       x: mazeWorldPos(MAZE_CENTER.col, MAZE_CENTER.row).x + 15,
-      y: mazeWorldPos(MAZE_CENTER.col, MAZE_CENTER.row).y + 20,
+      y: mazeWorldPos(MAZE_CENTER.col, MAZE_CENTER.row).y + 10,
       color: '#f0a0c0', emoji: '👶', hasCandle: false,
       dialogue: () => "Abadi abwé !",
     },
@@ -689,7 +780,14 @@ function nextDialogue() {
   dialogueActive = true;
   const d = dialogueQueue.shift();
   const box = document.getElementById('dialogue-box');
-  box.querySelector('.speaker').textContent = d.speaker;
+  const speakerEl = box.querySelector('.speaker');
+  if (d.speaker === 'Système' || d.speaker === 'System') {
+    speakerEl.textContent = '';
+    speakerEl.style.display = 'none';
+  } else {
+    speakerEl.textContent = d.speaker;
+    speakerEl.style.display = 'block';
+  }
   box.querySelector('.text').textContent = d.text;
   box.style.display = 'block';
 }
@@ -717,12 +815,9 @@ const QUEST_NAMES = {
 function updateHUD() {
   if (!gameState) return;
   const hud = document.getElementById('hud');
-  let html = '<div class="quest-line" style="font-weight:bold;margin-bottom:4px;">🎂 Parle aux personnages avec une bougie</div>';
-  for (const [key, name] of Object.entries(QUEST_NAMES)) {
-    const q = gameState.quests[key];
-    const done = q.status === 'completed';
-    html += `<div class="quest-line${done ? ' completed' : ''}">${done ? '✅' : '⬜'} ${name}</div>`;
-  }
+  const doneCount = Object.values(gameState.quests).filter(q => q.status === 'completed').length;
+  const totalCount = Object.keys(gameState.quests).length;
+  let html = `<div class="quest-line" style="font-weight:bold;">🎂 Parle aux personnages avec une bougie (${doneCount}/${totalCount})</div>`;
   hud.innerHTML = html;
 }
 
@@ -773,17 +868,16 @@ function checkAllComplete() {
 
 // ---- Sculpture Mini-Game ----
 const SCULPTURE_PARTS = [
-  // Each part has options (emojis), correct index
-  { label: 'Tête', options: ['💃', '🎩', '👑', '🌺'], correct: 2 }, // crown
-  { label: 'Haut du corps', options: ['💪', '👗', '🎀', '🧥'], correct: 1 }, // dress top
-  { label: 'Bas du corps', options: ['👟', '💃', '🩰', '👖'], correct: 1 }, // dancing
-  { label: 'Pieds', options: ['👢', '🩰', '👠', '🦶'], correct: 1 }, // ballet shoes
+  // Each part has options (text/simple labels), correct index
+  { label: 'Tête', options: ['Chapeau', 'Couronne', 'Casque'], correct: 1 },
+  { label: 'Corps', options: ['Cape', 'Robe', 'Armure'], correct: 1 },
+  { label: 'Pieds', options: ['Bottes', '🩰', 'Baskets'], correct: 1 },
 ];
 
-let sculptureSelections = [0, 0, 0, 0];
+let sculptureSelections = [0, 0, 0];
 
 function openSculptureGame() {
-  sculptureSelections = [0, 0, 0, 0];
+  sculptureSelections = [0, 0, 0];
   const container = document.getElementById('sculpture-container');
   container.innerHTML = '';
   document.getElementById('sculpture-error').textContent = '';
@@ -791,6 +885,10 @@ function openSculptureGame() {
   SCULPTURE_PARTS.forEach((part, i) => {
     const row = document.createElement('div');
     row.className = 'sculpture-row';
+
+    const label = document.createElement('div');
+    label.style.cssText = 'color: #c9a96e; font-size: 14px; min-width: 80px; text-align: right; margin-right: 10px;';
+    label.textContent = part.label;
 
     const leftBtn = document.createElement('button');
     leftBtn.className = 'arrow-btn';
@@ -807,6 +905,7 @@ function openSculptureGame() {
     rightBtn.textContent = '▶';
     rightBtn.onclick = () => changeSculpturePart(i, 1);
 
+    row.appendChild(label);
     row.appendChild(leftBtn);
     row.appendChild(display);
     row.appendChild(rightBtn);
@@ -1016,9 +1115,24 @@ function handleInput(clientX, clientY) {
   gameState.targetItem = null;
 }
 
-canvas.addEventListener('click', (e) => handleInput(e.clientX, e.clientY));
+canvas.addEventListener('click', (e) => {
+  // Close dialogue if active when clicking on canvas (i.e. outside the dialogue box)
+  if (dialogueActive) {
+    dialogueQueue = [];
+    dialogueActive = false;
+    document.getElementById('dialogue-box').style.display = 'none';
+    return;
+  }
+  handleInput(e.clientX, e.clientY);
+});
 canvas.addEventListener('touchstart', (e) => {
   e.preventDefault();
+  if (dialogueActive) {
+    dialogueQueue = [];
+    dialogueActive = false;
+    document.getElementById('dialogue-box').style.display = 'none';
+    return;
+  }
   const touch = e.touches[0];
   handleInput(touch.clientX, touch.clientY);
 }, { passive: false });
@@ -1136,21 +1250,98 @@ function drawGround() {
     ctx.fillStyle = r.color;
     ctx.fillRect(sx, sy, REGION_W, REGION_H);
 
-    // Subtle ground texture dots
-    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    // Ground texture - grass-like variation
     const startTileX = Math.max(0, Math.floor(-sx / TILE));
     const endTileX = Math.min(40, Math.ceil((canvas.width - sx) / TILE));
     const startTileY = Math.max(0, Math.floor(-sy / TILE));
     const endTileY = Math.min(30, Math.ceil((canvas.height - sy) / TILE));
-    for (let tx = startTileX; tx < endTileX; tx += 2) {
-      for (let ty = startTileY; ty < endTileY; ty += 2) {
-        ctx.fillRect(sx + tx * TILE + 19, sy + ty * TILE + 19, 3, 3);
+    for (let tx = startTileX; tx < endTileX; tx++) {
+      for (let ty = startTileY; ty < endTileY; ty++) {
+        const hash = ((tx * 7 + ty * 13 + r.col * 31 + r.row * 53) % 17) / 17;
+        if (hash < 0.3) {
+          ctx.fillStyle = 'rgba(0,0,0,0.04)';
+          ctx.fillRect(sx + tx * TILE, sy + ty * TILE, TILE, TILE);
+        } else if (hash > 0.85) {
+          ctx.fillStyle = 'rgba(255,255,255,0.03)';
+          ctx.fillRect(sx + tx * TILE, sy + ty * TILE, TILE, TILE);
+        }
       }
     }
 
-    // Region border
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 3;
+    // Draw paths/roads per region
+    ctx.strokeStyle = 'rgba(160,140,110,0.5)';
+    ctx.lineWidth = 18;
+    ctx.setLineDash([]);
+    if (key === 'velizy') {
+      // Main road through town
+      ctx.strokeStyle = '#8a7a6a';
+      ctx.lineWidth = 20;
+      ctx.beginPath();
+      ctx.moveTo(sx + 100, sy + 400);
+      ctx.lineTo(sx + 1400, sy + 400);
+      ctx.stroke();
+      // Cross road
+      ctx.beginPath();
+      ctx.moveTo(sx + 700, sy + 50);
+      ctx.lineTo(sx + 700, sy + 1100);
+      ctx.stroke();
+      // Path borders
+      ctx.strokeStyle = '#6a5a4a';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(sx + 100, sy + 390);
+      ctx.lineTo(sx + 1400, sy + 390);
+      ctx.moveTo(sx + 100, sy + 410);
+      ctx.lineTo(sx + 1400, sy + 410);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else if (key === 'cuernavaca') {
+      // Winding dusty road
+      ctx.strokeStyle = '#a08a60';
+      ctx.lineWidth = 22;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy + 500);
+      ctx.quadraticCurveTo(sx + 400, sy + 350, sx + 800, sy + 500);
+      ctx.quadraticCurveTo(sx + 1200, sy + 650, sx + 1600, sy + 500);
+      ctx.stroke();
+    } else if (key === 'acapulco') {
+      // Beach boardwalk
+      ctx.strokeStyle = '#c0a870';
+      ctx.lineWidth = 16;
+      ctx.beginPath();
+      ctx.moveTo(sx + 50, sy + 600);
+      ctx.lineTo(sx + 900, sy + 600);
+      ctx.stroke();
+    } else if (key === 'paris') {
+      // Boulevard
+      ctx.strokeStyle = '#5a5a6a';
+      ctx.lineWidth = 24;
+      ctx.beginPath();
+      ctx.moveTo(sx + 50, sy + 500);
+      ctx.lineTo(sx + 1500, sy + 500);
+      ctx.stroke();
+      // Cobblestone hint
+      ctx.strokeStyle = '#6a6a7a';
+      ctx.lineWidth = 1;
+      for (let cx = 60; cx < 1500; cx += 12) {
+        for (let cy = 490; cy < 510; cy += 8) {
+          ctx.strokeRect(sx + cx + ((cy % 16 === 0) ? 6 : 0), sy + cy, 10, 6);
+        }
+      }
+    } else if (key === 'athis') {
+      // Dirt path
+      ctx.strokeStyle = '#8a7a50';
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.moveTo(sx + 50, sy + 400);
+      ctx.lineTo(sx + 650, sy + 400);
+      ctx.stroke();
+    }
+
+    // Region border (subtle)
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 2;
     ctx.strokeRect(sx, sy, REGION_W, REGION_H);
 
     // Region name in corner
@@ -1184,8 +1375,12 @@ function drawGround() {
     }
     ctx.textAlign = 'left';
 
-    // Special: ocean in Acapulco (right side)
+    // Special: beach sand zone and ocean in Acapulco (right side)
     if (key === 'acapulco') {
+      // Sandy beach strip
+      ctx.fillStyle = '#e8d4a0';
+      ctx.fillRect(sx + REGION_W - 400, sy, 100, REGION_H);
+      // Ocean
       ctx.fillStyle = '#2070a0';
       ctx.fillRect(sx + REGION_W - 300, sy, 300, REGION_H);
       // Waves
@@ -1202,13 +1397,69 @@ function drawGround() {
       }
     }
 
-    // Special: mountain gradient in Grenoble (upper half)
+    // Special: mountain gradient and peaks in Grenoble
     if (key === 'grenoble') {
       const grad = ctx.createLinearGradient(sx, sy, sx, sy + REGION_H * 0.6);
-      grad.addColorStop(0, '#4a5a3a');
+      grad.addColorStop(0, '#3a4a2a');
       grad.addColorStop(1, 'transparent');
       ctx.fillStyle = grad;
       ctx.fillRect(sx, sy, REGION_W, REGION_H * 0.6);
+
+      // Mountain peaks silhouette in background
+      ctx.fillStyle = '#3a5a3a';
+      ctx.beginPath();
+      ctx.moveTo(sx, sy + 200);
+      ctx.lineTo(sx + 150, sy + 40);
+      ctx.lineTo(sx + 300, sy + 160);
+      ctx.lineTo(sx + 500, sy + 20);
+      ctx.lineTo(sx + 700, sy + 130);
+      ctx.lineTo(sx + 900, sy + 10);
+      ctx.lineTo(sx + 1100, sy + 100);
+      ctx.lineTo(sx + 1300, sy + 30);
+      ctx.lineTo(sx + 1600, sy + 150);
+      ctx.lineTo(sx + 1600, sy + 300);
+      ctx.lineTo(sx, sy + 300);
+      ctx.closePath();
+      ctx.fill();
+
+      // Snow caps
+      ctx.fillStyle = 'rgba(240,245,255,0.5)';
+      ctx.beginPath();
+      ctx.moveTo(sx + 140, sy + 50);
+      ctx.lineTo(sx + 150, sy + 40);
+      ctx.lineTo(sx + 160, sy + 50);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(sx + 485, sy + 30);
+      ctx.lineTo(sx + 500, sy + 20);
+      ctx.lineTo(sx + 515, sy + 35);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(sx + 885, sy + 20);
+      ctx.lineTo(sx + 900, sy + 10);
+      ctx.lineTo(sx + 920, sy + 25);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(sx + 1285, sy + 40);
+      ctx.lineTo(sx + 1300, sy + 30);
+      ctx.lineTo(sx + 1315, sy + 45);
+      ctx.closePath();
+      ctx.fill();
+
+      // River/stream through valley
+      ctx.strokeStyle = '#4a8ab0';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(sx + 100, sy + 1100);
+      ctx.quadraticCurveTo(sx + 400, sy + 950, sx + 300, sy + 800);
+      ctx.quadraticCurveTo(sx + 200, sy + 700, sx + 400, sy + 650);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
 
       // Mountain path (zigzag line)
       ctx.strokeStyle = '#8a7a6a';
@@ -1249,21 +1500,117 @@ function drawBuildings() {
     const sy = b.y - camY;
     if (sx + b.w < 0 || sx > canvas.width || sy + b.h < 0 || sy > canvas.height) continue;
 
+    const btype = b.type || 'default';
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(sx + 4, sy + 4, b.w, b.h);
+
+    // Main building body
     ctx.fillStyle = b.color;
     ctx.fillRect(sx, sy, b.w, b.h);
 
-    // Roof/outline
-    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(sx, sy, b.w, b.h);
+    // Building details based on type
+    if (btype === 'house' || btype === 'shop' || btype === 'parisian' || btype === 'school' || btype === 'mexican' || btype === 'hotel' || btype === 'farm') {
+      // Roof
+      ctx.fillStyle = darkenColor(b.color, 0.3);
+      ctx.fillRect(sx - 4, sy - 8, b.w + 8, 12);
+
+      // Windows
+      ctx.fillStyle = '#c0d8f0';
+      const winCols = Math.floor(b.w / 40);
+      const winRows = Math.floor(b.h / 45);
+      for (let wr = 0; wr < winRows; wr++) {
+        for (let wc = 0; wc < winCols; wc++) {
+          const wx = sx + 15 + wc * (b.w - 20) / Math.max(winCols, 1);
+          const wy = sy + 15 + wr * 35;
+          ctx.fillRect(wx, wy, 14, 12);
+          // Window frame
+          ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(wx, wy, 14, 12);
+          // Cross bar
+          ctx.beginPath();
+          ctx.moveTo(wx + 7, wy);
+          ctx.lineTo(wx + 7, wy + 12);
+          ctx.moveTo(wx, wy + 6);
+          ctx.lineTo(wx + 14, wy + 6);
+          ctx.stroke();
+        }
+      }
+
+      // Door
+      ctx.fillStyle = darkenColor(b.color, 0.4);
+      const doorW = 14, doorH = 20;
+      ctx.fillRect(sx + b.w / 2 - doorW / 2, sy + b.h - doorH, doorW, doorH);
+      // Door knob
+      ctx.fillStyle = '#c9a96e';
+      ctx.beginPath();
+      ctx.arc(sx + b.w / 2 + 3, sy + b.h - doorH / 2, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (btype === 'eiffel') {
+      // Eiffel Tower shape
+      ctx.fillStyle = '#6a6a6a';
+      ctx.beginPath();
+      ctx.moveTo(sx + b.w / 2, sy);
+      ctx.lineTo(sx - 10, sy + b.h);
+      ctx.lineTo(sx + b.w + 10, sy + b.h);
+      ctx.closePath();
+      ctx.fill();
+      // Cross beams
+      ctx.strokeStyle = '#5a5a5a';
+      ctx.lineWidth = 2;
+      for (let ly = 0; ly < 4; ly++) {
+        const yy = sy + 30 + ly * 40;
+        ctx.beginPath();
+        ctx.moveTo(sx + b.w / 2 - 20 - ly * 5, yy);
+        ctx.lineTo(sx + b.w / 2 + 20 + ly * 5, yy);
+        ctx.stroke();
+      }
+    }
+
+    if (btype === 'castle') {
+      // Bastille: add battlements
+      ctx.fillStyle = darkenColor(b.color, 0.2);
+      for (let bt = 0; bt < Math.floor(b.w / 20); bt++) {
+        ctx.fillRect(sx + bt * 20, sy - 10, 12, 10);
+      }
+    }
+
+    if (btype === 'park' || btype === 'garden') {
+      // Don't draw as a solid block - just outline
+      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+      ctx.strokeRect(sx, sy, b.w, b.h);
+      ctx.setLineDash([]);
+    } else {
+      // Outline
+      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(sx, sy, b.w, b.h);
+    }
 
     // Label
     ctx.fillStyle = b.labelColor;
     ctx.font = 'bold 12px Georgia';
     ctx.textAlign = 'center';
-    ctx.fillText(b.label, sx + b.w / 2, sy + b.h / 2 + 5);
+    if (btype === 'park' || btype === 'garden' || btype === 'plaza') {
+      ctx.fillText(b.label, sx + b.w / 2, sy + b.h / 2 + 5);
+    } else {
+      ctx.fillText(b.label, sx + b.w / 2, sy - 14);
+    }
     ctx.textAlign = 'left';
   }
+}
+
+function darkenColor(hex, amount) {
+  const r = Math.max(0, parseInt(hex.slice(1,3), 16) - Math.floor(255 * amount));
+  const g = Math.max(0, parseInt(hex.slice(3,5), 16) - Math.floor(255 * amount));
+  const bl = Math.max(0, parseInt(hex.slice(5,7), 16) - Math.floor(255 * amount));
+  return `rgb(${r},${g},${bl})`;
 }
 
 function drawMaze() {
@@ -1315,26 +1662,361 @@ function drawDecorations() {
   for (const d of allDecorations) {
     const sx = d.x - camX;
     const sy = d.y - camY;
-    if (sx < -30 || sx > canvas.width + 30 || sy < -30 || sy > canvas.height + 30) continue;
+    if (sx < -50 || sx > canvas.width + 50 || sy < -50 || sy > canvas.height + 50) continue;
 
-    ctx.font = '24px serif';
     ctx.textAlign = 'center';
 
     switch (d.type) {
       case 'tree':
-        ctx.fillText('🌳', sx, sy);
+        // Draw a tree with trunk and canopy
+        ctx.fillStyle = '#5a3a1a';
+        ctx.fillRect(sx - 3, sy - 5, 6, 16);
+        ctx.fillStyle = '#3a8a2a';
+        ctx.beginPath();
+        ctx.arc(sx, sy - 12, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4a9a3a';
+        ctx.beginPath();
+        ctx.arc(sx - 5, sy - 8, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(sx + 6, sy - 10, 7, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'pine':
+        // Pine tree (triangle)
+        ctx.fillStyle = '#4a3010';
+        ctx.fillRect(sx - 3, sy, 6, 14);
+        ctx.fillStyle = '#2a6a2a';
+        ctx.beginPath();
+        ctx.moveTo(sx, sy - 22);
+        ctx.lineTo(sx - 12, sy + 2);
+        ctx.lineTo(sx + 12, sy + 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#1a5a1a';
+        ctx.beginPath();
+        ctx.moveTo(sx, sy - 16);
+        ctx.lineTo(sx - 10, sy + 6);
+        ctx.lineTo(sx + 10, sy + 6);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      case 'plane_tree':
+        // Tall Parisian plane tree
+        ctx.fillStyle = '#6a5a3a';
+        ctx.fillRect(sx - 3, sy - 8, 6, 22);
+        ctx.fillStyle = '#5a9a3a';
+        ctx.beginPath();
+        ctx.arc(sx, sy - 16, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4a8a2a';
+        ctx.beginPath();
+        ctx.arc(sx - 7, sy - 12, 9, 0, Math.PI * 2);
+        ctx.fill();
         break;
       case 'cactus':
-        ctx.fillText('🌵', sx, sy);
+        // Draw a cactus shape
+        ctx.fillStyle = '#2a7a2a';
+        ctx.fillRect(sx - 4, sy - 10, 8, 24);
+        ctx.fillRect(sx - 12, sy - 6, 10, 6);
+        ctx.fillRect(sx - 12, sy - 12, 4, 10);
+        ctx.fillRect(sx + 4, sy - 2, 8, 6);
+        ctx.fillRect(sx + 8, sy - 8, 4, 10);
+        ctx.fillStyle = '#3a9a3a';
+        ctx.fillRect(sx - 3, sy - 9, 6, 22);
         break;
       case 'palm':
-        ctx.fillText('🌴', sx, sy);
+        // Palm tree with trunk and fronds
+        ctx.fillStyle = '#8a6a3a';
+        ctx.fillRect(sx - 3, sy - 5, 6, 22);
+        // Fronds
+        ctx.strokeStyle = '#2a8a2a';
+        ctx.lineWidth = 3;
+        for (let a = 0; a < 5; a++) {
+          const angle = (a / 5) * Math.PI * 2 - Math.PI / 2;
+          ctx.beginPath();
+          ctx.moveTo(sx, sy - 10);
+          ctx.quadraticCurveTo(
+            sx + Math.cos(angle) * 18, sy - 10 + Math.sin(angle) * 12,
+            sx + Math.cos(angle) * 22, sy - 5 + Math.sin(angle) * 18
+          );
+          ctx.stroke();
+        }
+        // Coconuts
+        ctx.fillStyle = '#6a4a2a';
+        ctx.beginPath();
+        ctx.arc(sx - 3, sy - 8, 3, 0, Math.PI * 2);
+        ctx.arc(sx + 3, sy - 9, 3, 0, Math.PI * 2);
+        ctx.fill();
         break;
       case 'rock':
-        ctx.fillText('🪨', sx, sy);
+        ctx.fillStyle = '#7a7a7a';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 10, 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#9a9a9a';
+        ctx.beginPath();
+        ctx.ellipse(sx - 2, sy - 2, 6, 4, 0.3, 0, Math.PI * 2);
+        ctx.fill();
         break;
       case 'cow':
+        ctx.font = '22px serif';
         ctx.fillText('🐄', sx, sy);
+        break;
+      case 'flower':
+        // Small flower cluster
+        const flowerColors = ['#e05070', '#e0a030', '#d040d0', '#f06080'];
+        ctx.fillStyle = flowerColors[Math.floor((d.x * 7 + d.y * 3) % flowerColors.length)];
+        ctx.beginPath();
+        ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Stem
+        ctx.strokeStyle = '#3a7a2a';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy + 3);
+        ctx.lineTo(sx, sy + 8);
+        ctx.stroke();
+        break;
+      case 'wildflower':
+        // Wild flower (simpler, scattered)
+        const wfColors = ['#c040a0', '#f0e040', '#40a0f0', '#f07030', '#a040f0'];
+        ctx.fillStyle = wfColors[Math.floor((d.x * 3 + d.y * 11) % wfColors.length)];
+        ctx.beginPath();
+        ctx.arc(sx - 2, sy, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = wfColors[Math.floor((d.x * 7 + d.y * 5) % wfColors.length)];
+        ctx.beginPath();
+        ctx.arc(sx + 3, sy + 2, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'bush':
+        ctx.fillStyle = '#3a7a3a';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4a9a4a';
+        ctx.beginPath();
+        ctx.arc(sx + 4, sy - 3, 6, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'bench':
+        // Park bench
+        ctx.fillStyle = '#6a4a2a';
+        ctx.fillRect(sx - 12, sy, 24, 4);
+        ctx.fillRect(sx - 12, sy - 6, 24, 3);
+        ctx.fillStyle = '#3a3a3a';
+        ctx.fillRect(sx - 10, sy + 3, 3, 6);
+        ctx.fillRect(sx + 8, sy + 3, 3, 6);
+        break;
+      case 'lamp':
+        // Street lamp
+        ctx.fillStyle = '#4a4a4a';
+        ctx.fillRect(sx - 1, sy - 15, 3, 24);
+        ctx.fillStyle = '#f0e070';
+        ctx.beginPath();
+        ctx.arc(sx + 1, sy - 17, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = '#f0e070';
+        ctx.beginPath();
+        ctx.arc(sx + 1, sy - 17, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        break;
+      case 'paris_lamp':
+        // Ornate Parisian lamp
+        ctx.fillStyle = '#2a2a2a';
+        ctx.fillRect(sx - 2, sy - 20, 4, 28);
+        // Lamp head
+        ctx.fillStyle = '#3a3a3a';
+        ctx.fillRect(sx - 6, sy - 22, 12, 4);
+        ctx.fillStyle = '#f0d060';
+        ctx.beginPath();
+        ctx.arc(sx, sy - 24, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = '#f0d060';
+        ctx.beginPath();
+        ctx.arc(sx, sy - 24, 16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        break;
+      case 'pigeon':
+        ctx.fillStyle = '#7a7a8a';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 5, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#5a5a6a';
+        ctx.beginPath();
+        ctx.arc(sx + 4, sy - 2, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'cafe_table':
+        // Small café table with chairs
+        ctx.fillStyle = '#4a3a2a';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#e8d0a0';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // Chairs
+        ctx.fillStyle = '#5a4a3a';
+        ctx.fillRect(sx - 10, sy - 2, 4, 4);
+        ctx.fillRect(sx + 6, sy - 2, 4, 4);
+        break;
+      case 'bougainvillea':
+        // Bright pink/purple flowering bush
+        ctx.fillStyle = '#3a6a2a';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#d030a0';
+        for (let f = 0; f < 5; f++) {
+          const fx = sx + Math.cos(f * 1.3) * 6;
+          const fy = sy + Math.sin(f * 1.3) * 5;
+          ctx.beginPath();
+          ctx.arc(fx, fy, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        break;
+      case 'pottery':
+        ctx.fillStyle = '#c06030';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy + 3, 6, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(sx - 4, sy - 5, 8, 8);
+        ctx.fillStyle = '#d07040';
+        ctx.fillRect(sx - 5, sy - 6, 10, 3);
+        break;
+      case 'sombrero':
+        ctx.fillStyle = '#c8a040';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 10, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#b09030';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy - 3, 6, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'umbrella':
+        // Beach umbrella
+        const umbColors = ['#e04040', '#4040e0', '#e0e040', '#40e040'];
+        ctx.fillStyle = '#8a6a3a';
+        ctx.fillRect(sx - 1, sy - 8, 2, 18);
+        ctx.fillStyle = umbColors[Math.floor((d.x + d.y) % umbColors.length)];
+        ctx.beginPath();
+        ctx.arc(sx, sy - 10, 12, Math.PI, 2 * Math.PI);
+        ctx.fill();
+        // Stripes
+        ctx.fillStyle = '#fff';
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy - 10);
+        ctx.lineTo(sx - 4, sy - 10);
+        ctx.lineTo(sx - 2, sy - 20);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(sx + 3, sy - 10);
+        ctx.lineTo(sx + 7, sy - 10);
+        ctx.lineTo(sx + 5, sy - 20);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        break;
+      case 'shell':
+        ctx.fillStyle = '#f0d0b0';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 4, 3, 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#c0a080';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        break;
+      case 'seagull':
+        // Simple seagull shape
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sx - 8, sy + 3);
+        ctx.quadraticCurveTo(sx - 3, sy - 4, sx, sy);
+        ctx.quadraticCurveTo(sx + 3, sy - 4, sx + 8, sy + 3);
+        ctx.stroke();
+        break;
+      case 'tropical_flower':
+        ctx.fillStyle = '#f04080';
+        ctx.beginPath();
+        for (let p = 0; p < 5; p++) {
+          const pa = (p / 5) * Math.PI * 2;
+          ctx.moveTo(sx, sy);
+          ctx.arc(sx + Math.cos(pa) * 4, sy + Math.sin(pa) * 4, 3, 0, Math.PI * 2);
+        }
+        ctx.fill();
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'snow':
+        ctx.fillStyle = 'rgba(240, 245, 255, 0.6)';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 18, 10, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'hay':
+        ctx.fillStyle = '#c8a840';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#a08830';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        // Hay lines
+        ctx.strokeStyle = '#b09838';
+        ctx.beginPath();
+        ctx.moveTo(sx - 7, sy - 3);
+        ctx.lineTo(sx + 7, sy - 3);
+        ctx.moveTo(sx - 6, sy + 2);
+        ctx.lineTo(sx + 6, sy + 2);
+        ctx.stroke();
+        break;
+      case 'fence':
+        ctx.fillStyle = '#7a5a2a';
+        ctx.fillRect(sx - 15, sy, 30, 3);
+        ctx.fillRect(sx - 12, sy - 6, 3, 12);
+        ctx.fillRect(sx, sy - 6, 3, 12);
+        ctx.fillRect(sx + 10, sy - 6, 3, 12);
+        break;
+      case 'pond':
+        ctx.fillStyle = '#3a7ab0';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 30, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#2a6a90';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // Water ripples
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(sx - 5, sy - 3, 8, 4, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(sx + 8, sy + 5, 6, 3, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        // Lily pad
+        ctx.fillStyle = '#3a8a3a';
+        ctx.beginPath();
+        ctx.arc(sx - 8, sy + 4, 5, 0, Math.PI * 2);
+        ctx.fill();
         break;
     }
     ctx.textAlign = 'left';
@@ -1431,10 +2113,36 @@ function drawPlayer() {
   ctx.lineWidth = 2;
   ctx.stroke();
 
+  // Hair (brunette)
+  ctx.fillStyle = '#4a2a0a';
+  ctx.beginPath();
+  ctx.arc(sx, sy - 6, 14, Math.PI, 2 * Math.PI);
+  ctx.fill();
+  // Side hair
+  ctx.fillRect(sx - 14, sy - 6, 5, 18);
+  ctx.fillRect(sx + 9, sy - 6, 5, 18);
+
   // Face
-  ctx.font = '20px serif';
+  ctx.fillStyle = '#f0c8a0';
+  ctx.beginPath();
+  ctx.arc(sx, sy + 2, 10, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = '#3a2010';
+  ctx.beginPath();
+  ctx.arc(sx - 4, sy, 1.5, 0, Math.PI * 2);
+  ctx.arc(sx + 4, sy, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Smile
+  ctx.strokeStyle = '#c06040';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(sx, sy + 3, 4, 0.1 * Math.PI, 0.9 * Math.PI);
+  ctx.stroke();
+
   ctx.textAlign = 'center';
-  ctx.fillText('👩', sx, sy + 7);
 
   // Name
   ctx.fillStyle = '#f5c842';
