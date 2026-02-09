@@ -286,6 +286,10 @@ function getRegionBuildings(regionKey) {
       buildings.push({ x: ox+500, y: oy+600, w: 160, h: 100, color: '#5a8a4a', label: 'Parc', labelColor: '#fff', type: 'park' });
       // Gathering area (for finale)
       buildings.push({ x: ox+250, y: oy+700, w: 200, h: 20, color: '#6a5a4a', label: 'Place du village', labelColor: '#ddd', type: 'plaza' });
+      // Cour Roland (with park)
+      buildings.push({ x: ox+1200, y: oy+500, w: 200, h: 130, color: '#9a8a6a', label: 'Cour Roland', labelColor: '#fff', type: 'park' });
+      // Fountain at Cour Roland
+      decorations.push({ x: ox + 1300, y: oy + 650, type: 'fountain' });
       // Trees scattered around
       for (let i = 0; i < 25; i++) {
         decorations.push({ x: ox + 80 + seededRandom()*1400, y: oy + 80 + seededRandom()*1050, type: 'tree' });
@@ -310,6 +314,12 @@ function getRegionBuildings(regionKey) {
       for (let i = 0; i < 4; i++) {
         decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*800, type: 'butterfly' });
       }
+      // Fountain in the parc
+      decorations.push({ x: ox + 580, y: oy + 640, type: 'fountain' });
+      // Mail box
+      decorations.push({ x: ox + 750, y: oy + 400, type: 'mailbox' });
+      // Bike rack
+      decorations.push({ x: ox + 420, y: oy + 400, type: 'bike' });
       break;
     }
     case 'cuernavaca': {
@@ -344,6 +354,12 @@ function getRegionBuildings(regionKey) {
       for (let i = 0; i < 3; i++) {
         decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*900, type: 'butterfly' });
       }
+      // Fountain in the plaza
+      decorations.push({ x: ox + 550, y: oy + 850, type: 'fountain' });
+      // Market stalls
+      for (let i = 0; i < 4; i++) {
+        decorations.push({ x: ox + 800 + seededRandom()*400, y: oy + 350 + i * 80, type: 'market_stall' });
+      }
       break;
     }
     case 'acapulco': {
@@ -372,6 +388,12 @@ function getRegionBuildings(regionKey) {
       for (let i = 0; i < 10; i++) {
         decorations.push({ x: ox + 50 + seededRandom()*800, y: oy + 100 + seededRandom()*1000, type: 'tropical_flower' });
       }
+      // Surfboards
+      for (let i = 0; i < 3; i++) {
+        decorations.push({ x: ox + 850 + seededRandom()*300, y: oy + 700 + seededRandom()*300, type: 'surfboard' });
+      }
+      // Hammock
+      decorations.push({ x: ox + 200, y: oy + 800, type: 'hammock' });
       break;
     }
     case 'paris': {
@@ -404,6 +426,12 @@ function getRegionBuildings(regionKey) {
       for (let i = 0; i < 8; i++) {
         decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 50 + seededRandom()*1100, type: 'flower' });
       }
+      // Statue
+      decorations.push({ x: ox + 800, y: oy + 250, type: 'statue' });
+      // Kiosque à journaux
+      decorations.push({ x: ox + 450, y: oy + 450, type: 'kiosk' });
+      // Fontaine Wallace
+      decorations.push({ x: ox + 700, y: oy + 650, type: 'fountain' });
       break;
     }
     case 'grenoble': {
@@ -435,6 +463,12 @@ function getRegionBuildings(regionKey) {
       for (let i = 0; i < 6; i++) {
         decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 20 + seededRandom()*200, type: 'snow' });
       }
+      // Mountain goats
+      for (let i = 0; i < 3; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 200 + seededRandom()*400, type: 'goat' });
+      }
+      // Alpine cabin
+      decorations.push({ x: ox + 1200, y: oy + 500, type: 'cabin' });
       break;
     }
     case 'athis': {
@@ -471,6 +505,14 @@ function getRegionBuildings(regionKey) {
       // Swallows
       for (let i = 0; i < 4; i++) {
         decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 50 + seededRandom()*300, type: 'swallow' });
+      }
+      // Well
+      decorations.push({ x: ox + 350, y: oy + 450, type: 'well' });
+      // Wheelbarrow
+      decorations.push({ x: ox + 250, y: oy + 750, type: 'wheelbarrow' });
+      // Chickens
+      for (let i = 0; i < 5; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*500, y: oy + 700 + seededRandom()*400, type: 'chicken' });
       }
       break;
     }
@@ -585,13 +627,11 @@ function createNPCs() {
             completeQuest('valerie');
             return "Joyeux anniversaire ! C'est exactement la danseuse que je voulais ! Merci !";
           }
-          openSculptureGame();
-          return null;
+          return "Joyeux anniversaire ! Va à Cour Roland pour sculpter la danseuse !";
         }
         q.status = 'in_progress';
         saveGame();
-        openSculptureGame();
-        return null;
+        return "Joyeux anniversaire ! J'ai besoin d'une sculpture de danseuse. Va à Cour Roland, le parc un peu plus loin, pour la créer !";
       },
     },
     // Cuernavaca
@@ -734,6 +774,8 @@ function createNPCs() {
       color: '#70a0d0', emoji: '👦', hasCandle: false,
       dialogue: () => {
         const q = gameState.quests.apolline;
+        // Céleste always speaks right after Arthur
+        setTimeout(() => showDialogue('Bébé Céleste', 'Abadi abwé !'), 100);
         if (q.status === 'in_progress') {
           q.foundArthur = true;
           saveGame();
@@ -775,8 +817,34 @@ const grenOrigin = regionOrigin('grenoble');
 const TELEPHERIQUE = {
   bottomX: grenOrigin.x + 550, bottomY: grenOrigin.y + 700,
   topX: grenOrigin.x + 550, topY: grenOrigin.y + 250,
-  active: false,
 };
+
+// Téléphérique ride animation state
+const telePheriqueRide = { active: false, progress: 0, direction: 'up', speed: 0.008 };
+
+function startTelePheriqueRide(direction) {
+  telePheriqueRide.active = true;
+  telePheriqueRide.progress = 0;
+  telePheriqueRide.direction = direction;
+  gameState.targetX = null;
+  gameState.targetY = null;
+}
+
+function updateTelePheriqueRide() {
+  if (!telePheriqueRide.active) return;
+  telePheriqueRide.progress += telePheriqueRide.speed;
+  let t = telePheriqueRide.progress;
+  if (t >= 1) {
+    t = 1;
+    telePheriqueRide.active = false;
+  }
+  const fromX = telePheriqueRide.direction === 'up' ? TELEPHERIQUE.bottomX : TELEPHERIQUE.topX;
+  const fromY = telePheriqueRide.direction === 'up' ? TELEPHERIQUE.bottomY : TELEPHERIQUE.topY;
+  const toX = telePheriqueRide.direction === 'up' ? TELEPHERIQUE.topX : TELEPHERIQUE.bottomX;
+  const toY = telePheriqueRide.direction === 'up' ? TELEPHERIQUE.topY : TELEPHERIQUE.bottomY;
+  gameState.playerX = fromX + (toX - fromX) * t;
+  gameState.playerY = fromY + (toY - fromY) * t;
+}
 
 // ---- Dialogue System ----
 let dialogueQueue = [];
@@ -831,6 +899,14 @@ const QUEST_NAMES = {
 function updateHUD() {
   if (!gameState) return;
   const hud = document.getElementById('hud');
+  if (gameState.allComplete && !endSequenceActive) {
+    hud.innerHTML = '<div class="quest-line" style="font-weight:bold;">🎂 Retourne à Vélizy !</div>';
+    return;
+  }
+  if (endSequenceActive) {
+    hud.innerHTML = '';
+    return;
+  }
   const doneCount = Object.values(gameState.quests).filter(q => q.status === 'completed').length;
   const totalCount = Object.keys(gameState.quests).length;
   let html = `<div class="quest-line" style="font-weight:bold;">🎂 Parle aux personnages avec une bougie (${doneCount}/${totalCount})</div>`;
@@ -877,8 +953,17 @@ function checkAllComplete() {
   const allDone = Object.values(gameState.quests).every(q => q.status === 'completed');
   if (allDone && !gameState.allComplete) {
     gameState.allComplete = true;
+    // Teleport ALL NPCs (including Gérard, Erika, etc.) to the plaza
+    const vo = regionOrigin('velizy');
+    const gatherX = vo.x + 250;
+    const gatherY = vo.y + 750;
+    npcs.forEach((npc, i) => {
+      npc.x = gatherX + (i % 7) * 45;
+      npc.y = gatherY + Math.floor(i / 7) * 35;
+      npc.region = 'velizy';
+    });
     saveGame();
-    setTimeout(() => startEndSequence(), 500);
+    // Don't start end sequence yet — player must go to Vélizy and talk to someone
   }
 }
 
@@ -1029,23 +1114,29 @@ function hasSave() {
 let endSequenceActive = false;
 let endSequenceTimer = 0;
 let endDancePhase = 0;
-const END_DANCE_DURATION = 300; // frames
+const END_DANCE_DURATION = 600; // ~10 seconds at 60fps
 
 function startEndSequence() {
   endSequenceActive = true;
   endSequenceTimer = 0;
-  // Teleport player to gathering area
-  const vo = regionOrigin('velizy');
-  gameState.playerX = vo.x + 350;
-  gameState.playerY = vo.y + 700;
   gameState.targetX = null;
   gameState.targetY = null;
+  // Center camera on the plaza
+  const vo = regionOrigin('velizy');
+  gameState.playerX = vo.x + 350;
+  gameState.playerY = vo.y + 730;
   showRegionLabel('Vélizy', '🎂');
 }
 
 function updateEndSequence() {
   endSequenceTimer++;
   endDancePhase = endSequenceTimer;
+  // Lock camera on the gathering area
+  const vo = regionOrigin('velizy');
+  camX = vo.x + 350 - canvas.width / 2;
+  camY = vo.y + 730 - canvas.height / 2;
+  camX = Math.max(0, Math.min(camX, WORLD_W - canvas.width));
+  camY = Math.max(0, Math.min(camY, WORLD_H - canvas.height));
   if (endSequenceTimer > END_DANCE_DURATION) {
     endSequenceActive = false;
     document.getElementById('end-screen').style.display = 'flex';
@@ -1065,6 +1156,8 @@ function isWalkable(x, y) {
       if (b.label === 'Jardin-Labyrinthe') continue;
       // Allow walking on Place du village
       if (b.label === 'Place du village') continue;
+      // Allow walking in Cour Roland
+      if (b.label === 'Cour Roland') continue;
       return false;
     }
   }
@@ -1079,7 +1172,7 @@ function isWalkable(x, y) {
 let inputTarget = null;
 
 function handleInput(clientX, clientY) {
-  if (dialogueActive || endSequenceActive) return;
+  if (dialogueActive || endSequenceActive || telePheriqueRide.active) return;
   if (document.getElementById('sculpture-game').style.display === 'flex') return;
 
   const worldX = clientX + camX;
@@ -1111,17 +1204,35 @@ function handleInput(clientX, clientY) {
     }
   }
 
-  // Check téléphérique click
-  const tdx = worldX - TELEPHERIQUE.bottomX;
-  const tdy = worldY - TELEPHERIQUE.bottomY;
-  if (Math.sqrt(tdx * tdx + tdy * tdy) < 80) {
-    // Teleport to top
-    gameState.playerX = TELEPHERIQUE.topX;
-    gameState.playerY = TELEPHERIQUE.topY;
-    gameState.targetX = null;
-    gameState.targetY = null;
-    showDialogue('Système', "🥚 Vous prenez le téléphérique en forme d'œuf vers la Bastille !");
-    return;
+  // Check Cour Roland click (sculpture mini-game)
+  const courRolandX = regionOrigin('velizy').x + 1300;
+  const courRolandY = regionOrigin('velizy').y + 565;
+  const crdx = worldX - courRolandX;
+  const crdy = worldY - courRolandY;
+  if (Math.sqrt(crdx * crdx + crdy * crdy) < 100) {
+    const q = gameState.quests.valerie;
+    if (q.status === 'in_progress' && !q.sculptureComplete) {
+      gameState.targetX = courRolandX;
+      gameState.targetY = courRolandY;
+      gameState.targetCourRoland = true;
+      return;
+    }
+  }
+
+  // Check téléphérique click (bottom station → ride up, or top area → ride down)
+  if (!telePheriqueRide.active) {
+    const tdx = worldX - TELEPHERIQUE.bottomX;
+    const tdy = worldY - TELEPHERIQUE.bottomY;
+    if (Math.sqrt(tdx * tdx + tdy * tdy) < 80) {
+      startTelePheriqueRide('up');
+      return;
+    }
+    const tdx2 = worldX - TELEPHERIQUE.topX;
+    const tdy2 = worldY - TELEPHERIQUE.topY;
+    if (Math.sqrt(tdx2 * tdx2 + tdy2 * tdy2) < 80) {
+      startTelePheriqueRide('down');
+      return;
+    }
   }
 
   // Just move
@@ -1157,6 +1268,7 @@ canvas.addEventListener('touchstart', (e) => {
 function update() {
   if (!gameState) return;
   if (endSequenceActive) { updateEndSequence(); return; }
+  if (telePheriqueRide.active) { updateTelePheriqueRide(); updateCamera(); return; }
   if (dialogueActive) return;
   if (document.getElementById('sculpture-game').style.display === 'flex') return;
 
@@ -1174,11 +1286,21 @@ function update() {
       if (gameState.targetNPC) {
         const npc = gameState.targetNPC;
         gameState.targetNPC = null;
+        // If all quests complete and we're in Vélizy, trigger end dance
+        if (gameState.allComplete && getCurrentRegion(gameState.playerX, gameState.playerY) === 'velizy') {
+          startEndSequence();
+          return;
+        }
         const text = npc.dialogue();
         if (text) showDialogue(npc.name, text);
         gameState.talkedTo[npc.id] = true;
         saveGame();
         updateHUD();
+      }
+      // Arrive at Cour Roland
+      if (gameState.targetCourRoland) {
+        gameState.targetCourRoland = false;
+        openSculptureGame();
       }
       // Pick up item
       if (gameState.targetItem) {
@@ -2164,6 +2286,248 @@ function drawDecorations() {
         ctx.fillRect(sx, sy - 6, 3, 12);
         ctx.fillRect(sx + 10, sy - 6, 3, 12);
         break;
+      case 'fountain': {
+        // Water fountain
+        ctx.fillStyle = '#8a8a8a';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy + 5, 16, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#6a6a6a';
+        ctx.fillRect(sx - 3, sy - 10, 6, 15);
+        // Water
+        ctx.fillStyle = '#5090c0';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy + 5, 13, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Spray
+        const sprayH = 8 + Math.sin(Date.now() * 0.006) * 3;
+        ctx.strokeStyle = '#80c0f0';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy - 10);
+        ctx.lineTo(sx, sy - 10 - sprayH);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(128,192,240,0.4)';
+        ctx.beginPath();
+        ctx.arc(sx, sy - 10 - sprayH, 4, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'mailbox': {
+        ctx.fillStyle = '#d0c030';
+        ctx.fillRect(sx - 4, sy - 8, 8, 12);
+        ctx.fillRect(sx - 6, sy - 10, 12, 4);
+        ctx.fillStyle = '#3a3a3a';
+        ctx.fillRect(sx - 1, sy + 2, 3, 10);
+        break;
+      }
+      case 'bike': {
+        ctx.strokeStyle = '#3a3a3a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(sx - 6, sy + 2, 5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(sx + 6, sy + 2, 5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(sx - 6, sy + 2);
+        ctx.lineTo(sx, sy - 5);
+        ctx.lineTo(sx + 6, sy + 2);
+        ctx.stroke();
+        ctx.strokeStyle = '#c04040';
+        ctx.beginPath();
+        ctx.moveTo(sx - 2, sy - 5);
+        ctx.lineTo(sx + 3, sy - 8);
+        ctx.stroke();
+        break;
+      }
+      case 'market_stall': {
+        // Colorful market stall
+        const stallColors = ['#e04040', '#4090e0', '#40c040', '#e0a030'];
+        ctx.fillStyle = '#8a6a3a';
+        ctx.fillRect(sx - 15, sy, 30, 15);
+        ctx.fillStyle = stallColors[Math.floor((d.x + d.y) % stallColors.length)];
+        ctx.fillRect(sx - 18, sy - 5, 36, 8);
+        // Goods
+        ctx.fillStyle = '#e0c040';
+        ctx.beginPath();
+        ctx.arc(sx - 6, sy + 5, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#e06040';
+        ctx.beginPath();
+        ctx.arc(sx + 4, sy + 5, 3, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'surfboard': {
+        ctx.fillStyle = ['#e04080', '#40c0e0', '#e0e040'][Math.floor((d.x * 3) % 3)];
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.rotate(0.3);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 4, 16, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, -10);
+        ctx.lineTo(0, 10);
+        ctx.stroke();
+        ctx.restore();
+        break;
+      }
+      case 'hammock': {
+        ctx.strokeStyle = '#c09050';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sx - 20, sy - 5);
+        ctx.quadraticCurveTo(sx, sy + 10, sx + 20, sy - 5);
+        ctx.stroke();
+        // Ropes
+        ctx.strokeStyle = '#8a6a3a';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx - 20, sy - 5);
+        ctx.lineTo(sx - 22, sy - 15);
+        ctx.moveTo(sx + 20, sy - 5);
+        ctx.lineTo(sx + 22, sy - 15);
+        ctx.stroke();
+        break;
+      }
+      case 'statue': {
+        // Classical statue on pedestal
+        ctx.fillStyle = '#a0a0a0';
+        ctx.fillRect(sx - 8, sy + 2, 16, 10);
+        ctx.fillStyle = '#c0c0c0';
+        ctx.fillRect(sx - 4, sy - 18, 8, 20);
+        // Head
+        ctx.beginPath();
+        ctx.arc(sx, sy - 22, 5, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'kiosk': {
+        // Newspaper kiosk
+        ctx.fillStyle = '#2a5a2a';
+        ctx.fillRect(sx - 12, sy - 10, 24, 20);
+        ctx.fillStyle = '#3a7a3a';
+        ctx.fillRect(sx - 14, sy - 14, 28, 6);
+        // Papers
+        ctx.fillStyle = '#f0f0e0';
+        ctx.fillRect(sx - 8, sy - 6, 6, 8);
+        ctx.fillRect(sx + 2, sy - 6, 6, 8);
+        break;
+      }
+      case 'goat': {
+        ctx.fillStyle = '#c0b0a0';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 6, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(sx + 5, sy - 2, 3, 0, Math.PI * 2);
+        ctx.fill();
+        // Horns
+        ctx.strokeStyle = '#5a4a3a';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx + 6, sy - 4);
+        ctx.lineTo(sx + 8, sy - 7);
+        ctx.moveTo(sx + 4, sy - 4);
+        ctx.lineTo(sx + 3, sy - 7);
+        ctx.stroke();
+        break;
+      }
+      case 'cabin': {
+        // Alpine cabin
+        ctx.fillStyle = '#6a4a2a';
+        ctx.fillRect(sx - 15, sy - 5, 30, 20);
+        // Roof
+        ctx.fillStyle = '#8a3a1a';
+        ctx.beginPath();
+        ctx.moveTo(sx - 18, sy - 5);
+        ctx.lineTo(sx, sy - 18);
+        ctx.lineTo(sx + 18, sy - 5);
+        ctx.closePath();
+        ctx.fill();
+        // Window
+        ctx.fillStyle = '#f0d060';
+        ctx.fillRect(sx - 4, sy, 8, 6);
+        // Door
+        ctx.fillStyle = '#4a2a0a';
+        ctx.fillRect(sx + 6, sy + 2, 6, 12);
+        break;
+      }
+      case 'well': {
+        ctx.fillStyle = '#7a7a7a';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 10, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#5a5a5a';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 8, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Water inside
+        ctx.fillStyle = '#3060a0';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy + 1, 6, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Posts and beam
+        ctx.fillStyle = '#5a3a1a';
+        ctx.fillRect(sx - 10, sy - 15, 3, 15);
+        ctx.fillRect(sx + 8, sy - 15, 3, 15);
+        ctx.fillRect(sx - 10, sy - 17, 21, 3);
+        break;
+      }
+      case 'wheelbarrow': {
+        ctx.fillStyle = '#6a8a3a';
+        ctx.beginPath();
+        ctx.moveTo(sx - 10, sy);
+        ctx.lineTo(sx + 6, sy);
+        ctx.lineTo(sx + 10, sy + 6);
+        ctx.lineTo(sx - 8, sy + 6);
+        ctx.closePath();
+        ctx.fill();
+        // Wheel
+        ctx.strokeStyle = '#3a3a3a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(sx + 12, sy + 8, 4, 0, Math.PI * 2);
+        ctx.stroke();
+        // Handle
+        ctx.strokeStyle = '#5a3a1a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sx - 10, sy);
+        ctx.lineTo(sx - 18, sy - 5);
+        ctx.moveTo(sx - 8, sy + 6);
+        ctx.lineTo(sx - 18, sy - 5);
+        ctx.stroke();
+        break;
+      }
+      case 'chicken': {
+        ctx.fillStyle = '#d0a050';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 4, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#e0b060';
+        ctx.beginPath();
+        ctx.arc(sx + 3, sy - 2, 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Beak
+        ctx.fillStyle = '#e08020';
+        ctx.beginPath();
+        ctx.moveTo(sx + 5, sy - 2);
+        ctx.lineTo(sx + 7, sy - 1.5);
+        ctx.lineTo(sx + 5, sy - 1);
+        ctx.fill();
+        // Comb
+        ctx.fillStyle = '#e03030';
+        ctx.beginPath();
+        ctx.arc(sx + 3, sy - 4, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
       case 'papel_picado': {
         // Mexican paper banner (string of colored triangles)
         ctx.strokeStyle = '#5a4a3a';
