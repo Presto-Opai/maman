@@ -158,7 +158,7 @@ canvas { display: block; cursor: pointer; touch-action: none; }
 
 <!-- Sculpture Mini-Game -->
 <div id="sculpture-game">
-  <h2>Sculpter une danseuse</h2>
+  <h2>Sculpter une princesse danseuse</h2>
   <div class="sculpture-container" id="sculpture-container"></div>
   <button class="validate-btn" id="sculpture-validate">Valider !</button>
   <div class="error-msg" id="sculpture-error"></div>
@@ -625,13 +625,13 @@ function createNPCs() {
           if (q.sculptureComplete) {
             q.status = 'completed';
             completeQuest('valerie');
-            return "Joyeux anniversaire ! C'est exactement la danseuse que je voulais ! Merci !";
+            return "Joyeux anniversaire ! C'est exactement la princesse danseuse que je voulais ! Merci !";
           }
-          return "Joyeux anniversaire ! Va à Cour Roland pour sculpter la danseuse !";
+          return "Joyeux anniversaire ! Va à Cour Roland pour sculpter la princesse danseuse !";
         }
         q.status = 'in_progress';
         saveGame();
-        return "Joyeux anniversaire ! J'ai besoin d'une sculpture de danseuse. Va à Cour Roland, le parc un peu plus loin, pour la créer !";
+        return "Joyeux anniversaire ! J'ai besoin d'une sculpture de princesse danseuse. Va à Cour Roland, le parc un peu plus loin, pour la créer !";
       },
     },
     // Cuernavaca
@@ -726,6 +726,8 @@ function createNPCs() {
       emoji: '👩', hasCandle: true, quest: 'grenoble',
       dialogue: () => {
         const q = gameState.quests.grenoble;
+        // Victor always speaks right after Géraldine
+        setTimeout(() => showDialogue('Petit Victor', 'Grooa ! Joyeux anniversaire Abue !'), 100);
         if (q.status === 'completed') return "Joyeux anniversaire maman !";
         q.status = 'completed';
         completeQuest('grenoble');
@@ -1323,6 +1325,23 @@ function update() {
       } else {
         gameState.targetX = null;
         gameState.targetY = null;
+      }
+    }
+  }
+
+  // Erika follows the player when erikaFollowing is true
+  if (gameState.quests.piquis.erikaFollowing && gameState.quests.piquis.status !== 'completed') {
+    const erika = npcs.find(n => n.id === 'erika');
+    if (erika) {
+      const followDist = 50; // stay this far behind
+      const edx = gameState.playerX - erika.x;
+      const edy = gameState.playerY - erika.y;
+      const eDist = Math.sqrt(edx * edx + edy * edy);
+      if (eDist > followDist) {
+        const speed = 3.0;
+        erika.x += (edx / eDist) * speed;
+        erika.y += (edy / eDist) * speed;
+        erika.region = getCurrentRegion(erika.x, erika.y);
       }
     }
   }
@@ -2671,13 +2690,23 @@ function drawNPCs() {
     ctx.fillText(npc.name, sx, sy - 22);
     ctx.textAlign = 'left';
 
-    // Dance animation during end sequence
+    // Dance animation during end sequence — circle choreography
     if (endSequenceActive) {
-      const angle = (Date.now() * 0.005 + npc.x) % (Math.PI * 2);
-      const danceX = Math.cos(angle) * 8;
-      const danceY = Math.sin(angle * 2) * 4;
-      npc.x += danceX * 0.02;
-      npc.y += danceY * 0.02;
+      const vo = regionOrigin('velizy');
+      const centerX = vo.x + 350;
+      const centerY = vo.y + 730;
+      const npcIdx = npcs.indexOf(npc);
+      const totalNPCs = npcs.length;
+      const baseAngle = (npcIdx / totalNPCs) * Math.PI * 2;
+      const rotSpeed = 0.003;
+      const time = endSequenceTimer;
+      const circleRadius = 80 + Math.sin(time * 0.02) * 15;
+      const currentAngle = baseAngle + time * rotSpeed;
+      // NPCs orbit around the cake
+      npc.x = centerX + Math.cos(currentAngle) * circleRadius;
+      npc.y = centerY + Math.sin(currentAngle) * circleRadius * 0.6; // squish for perspective
+      // Small bounce
+      npc.y += Math.sin(time * 0.15 + npcIdx) * 3;
     }
   }
 }
