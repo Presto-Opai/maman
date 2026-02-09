@@ -228,8 +228,8 @@ let gameState = null;
 
 function newGameState() {
   return {
-    playerX: regionOrigin('velizy').x + 300,
-    playerY: regionOrigin('velizy').y + 400,
+    playerX: regionOrigin('velizy').x + 620,
+    playerY: regionOrigin('velizy').y + 200,
     targetX: null,
     targetY: null,
     quests: {
@@ -306,11 +306,15 @@ function getRegionBuildings(regionKey) {
       for (let i = 0; i < 12; i++) {
         decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 50 + seededRandom()*1100, type: 'bush' });
       }
+      // Butterflies
+      for (let i = 0; i < 4; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*800, type: 'butterfly' });
+      }
       break;
     }
     case 'cuernavaca': {
       // Sombrero shop
-      buildings.push({ x: ox+300, y: oy+300, w: 180, h: 120, color: '#d4a050', label: 'Boutique Sombreros', labelColor: '#fff', type: 'mexican' });
+      buildings.push({ x: ox+300, y: oy+300, w: 180, h: 120, color: '#d4a050', label: 'Tienda de Sombreros', labelColor: '#fff', type: 'mexican' });
       // Market
       buildings.push({ x: ox+700, y: oy+200, w: 200, h: 100, color: '#c09040', label: 'Mercado', labelColor: '#fff', type: 'mexican' });
       buildings.push({ x: ox+600, y: oy+600, w: 140, h: 90, color: '#b08030', label: 'Cantina', labelColor: '#fff', type: 'mexican' });
@@ -332,14 +336,22 @@ function getRegionBuildings(regionKey) {
       for (let i = 0; i < 4; i++) {
         decorations.push({ x: ox + 200 + seededRandom()*1200, y: oy + 200 + seededRandom()*800, type: 'sombrero' });
       }
+      // String lights (papel picado)
+      for (let i = 0; i < 5; i++) {
+        decorations.push({ x: ox + 150 + seededRandom()*1300, y: oy + 150 + seededRandom()*400, type: 'papel_picado' });
+      }
+      // Butterflies
+      for (let i = 0; i < 3; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*900, type: 'butterfly' });
+      }
       break;
     }
     case 'acapulco': {
       // Hotel
-      buildings.push({ x: ox+300, y: oy+200, w: 260, h: 160, color: '#e0c080', label: 'Hôtel Acapulco Princess', labelColor: '#333', type: 'hotel' });
+      buildings.push({ x: ox+300, y: oy+200, w: 260, h: 160, color: '#e0c080', label: 'Hotel Acapulco Princess', labelColor: '#333', type: 'hotel' });
       // Beach bar
-      buildings.push({ x: ox+600, y: oy+500, w: 140, h: 90, color: '#d0b070', label: 'Restaurant', labelColor: '#fff', type: 'mexican' });
-      buildings.push({ x: ox+150, y: oy+500, w: 100, h: 70, color: '#c8a060', label: 'Bar de plage', labelColor: '#fff', type: 'shop' });
+      buildings.push({ x: ox+600, y: oy+500, w: 140, h: 90, color: '#d0b070', label: 'Restaurante', labelColor: '#fff', type: 'mexican' });
+      buildings.push({ x: ox+150, y: oy+500, w: 100, h: 70, color: '#c8a060', label: 'Bar de Playa', labelColor: '#fff', type: 'shop' });
       // Palm trees
       for (let i = 0; i < 18; i++) {
         decorations.push({ x: ox + 50 + seededRandom()*950, y: oy + 50 + seededRandom()*1100, type: 'palm' });
@@ -456,6 +468,10 @@ function getRegionBuildings(regionKey) {
       }
       // Pond
       decorations.push({ x: ox + 450, y: oy + 500, type: 'pond' });
+      // Swallows
+      for (let i = 0; i < 4; i++) {
+        decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 50 + seededRandom()*300, type: 'swallow' });
+      }
       break;
     }
   }
@@ -585,39 +601,39 @@ function createNPCs() {
       emoji: '👩', hasCandle: true, quest: 'carmen',
       dialogue: () => {
         const q = gameState.quests.carmen;
-        if (q.status === 'completed') return "Joyeux anniversaire ! Gracias por las tortillas !";
+        if (q.status === 'completed') return "¡Feliz cumpleaños mi hija! ¡Gracias por las tortillas!";
         if (q.status === 'in_progress') {
           if (q.tortillas >= 3) {
             q.status = 'completed';
             completeQuest('carmen');
-            return "Joyeux anniversaire ! Tu as trouvé les trois tortillas ! Merci !";
+            return "¡Feliz cumpleaños mi hija! ¡Encontraste las tres tortillas! ¡Gracias!";
           }
-          return `Joyeux anniversaire ! Il me faut trois tortillas... Tu en as ${q.tortillas}/3.`;
+          return `¡Feliz cumpleaños mi hija! Necesito tres tortillas... Tienes ${q.tortillas}/3.`;
         }
         q.status = 'in_progress';
         saveGame();
-        return "Joyeux anniversaire ! Tu peux me ramener trois tortillas ? Elles sont quelque part dans la région !";
+        return "¡Feliz cumpleaños mi hija! ¿Puedes traerme tres tortillas? ¡Están por algún lugar de la región!";
       },
     },
     // Acapulco
     {
       id: 'piquis', name: 'Piquis', region: 'acapulco',
-      x: ao.x + 350, y: ao.y + 350, color: '#70b0e0',
+      x: ao.x + 430, y: ao.y + 400, color: '#70b0e0',
       emoji: '👵', hasCandle: true, quest: 'piquis',
       dialogue: () => {
         const q = gameState.quests.piquis;
-        if (q.status === 'completed') return "Joyeux anniversaire ! Erika est revenue, merci !";
+        if (q.status === 'completed') return "¡Feliz cumpleaños! ¡Erika regresó, gracias!";
         if (q.status === 'in_progress') {
           if (q.erikaFollowing) {
             q.status = 'completed';
             completeQuest('piquis');
-            return "Joyeux anniversaire ! Erika, te voilà ! Merci de l'avoir ramenée !";
+            return "¡Feliz cumpleaños! ¡Erika, aquí estás! ¡Gracias por traerla!";
           }
-          return "Joyeux anniversaire ! Tu as trouvé Erika ? Elle regarde l'océan quelque part...";
+          return "¡Feliz cumpleaños! ¿Encontraste a Erika? Está mirando el océano por allá...";
         }
         q.status = 'in_progress';
         saveGame();
-        return "Joyeux anniversaire ! Peux-tu me ramener Erika ? Elle est partie regarder l'océan plus loin...";
+        return "¡Feliz cumpleaños! ¿Puedes traerme a Erika? Se fue a mirar el océano más lejos...";
       },
     },
     {
@@ -626,13 +642,13 @@ function createNPCs() {
       emoji: '👧', hasCandle: false,
       dialogue: () => {
         const q = gameState.quests.piquis;
-        if (q.status === 'completed') return "L'océan est tellement beau !";
+        if (q.status === 'completed') return "¡El océano es tan hermoso!";
         if (q.status === 'in_progress' && !q.erikaFollowing) {
           q.erikaFollowing = true;
           saveGame();
-          return "Joyeux anniversaire ! D'accord, je te suis ! Retournons voir Piquis !";
+          return "¡Feliz cumpleaños! ¡Está bien, te sigo! ¡Vamos a ver a Piquis!";
         }
-        return "Je regarde l'océan... c'est si beau ici.";
+        return "Estoy mirando el océano... es tan bonito aquí.";
       },
     },
     // Paris
@@ -1339,6 +1355,89 @@ function drawGround() {
       ctx.stroke();
     }
 
+    // Region-specific ground details
+    if (key === 'velizy') {
+      // Grass tufts
+      ctx.fillStyle = 'rgba(80,140,60,0.25)';
+      for (let g = 0; g < 40; g++) {
+        const gx = sx + ((g * 137 + 29) % 1600);
+        const gy = sy + ((g * 211 + 73) % 1200);
+        ctx.beginPath();
+        ctx.moveTo(gx, gy);
+        ctx.lineTo(gx - 3, gy - 8);
+        ctx.lineTo(gx + 1, gy - 6);
+        ctx.lineTo(gx + 4, gy - 10);
+        ctx.lineTo(gx + 3, gy);
+        ctx.fill();
+      }
+    } else if (key === 'cuernavaca') {
+      // Colorful ground patches (terracotta tiles feel)
+      ctx.globalAlpha = 0.08;
+      for (let p = 0; p < 15; p++) {
+        const px2 = sx + ((p * 179 + 41) % 1500);
+        const py2 = sy + ((p * 233 + 67) % 1100);
+        ctx.fillStyle = ['#e06030', '#d0a040', '#c07040'][p % 3];
+        ctx.fillRect(px2, py2, 60, 60);
+      }
+      ctx.globalAlpha = 1;
+    } else if (key === 'acapulco') {
+      // Sunset gradient at top
+      const sunGrad = ctx.createLinearGradient(sx, sy, sx, sy + 200);
+      sunGrad.addColorStop(0, 'rgba(240,160,80,0.15)');
+      sunGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = sunGrad;
+      ctx.fillRect(sx, sy, REGION_W, 200);
+    } else if (key === 'paris') {
+      // Seine river through bottom
+      ctx.fillStyle = '#4a7aa0';
+      ctx.beginPath();
+      ctx.moveTo(sx, sy + 800);
+      ctx.quadraticCurveTo(sx + 400, sy + 780, sx + 800, sy + 810);
+      ctx.quadraticCurveTo(sx + 1200, sy + 840, sx + 1600, sy + 800);
+      ctx.lineTo(sx + 1600, sy + 840);
+      ctx.quadraticCurveTo(sx + 1200, sy + 880, sx + 800, sy + 850);
+      ctx.quadraticCurveTo(sx + 400, sy + 820, sx, sy + 840);
+      ctx.closePath();
+      ctx.fill();
+      // Seine ripples
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 1;
+      for (let rp = 0; rp < 8; rp++) {
+        const ry2 = sy + 805 + rp * 4;
+        ctx.beginPath();
+        for (let rx2 = 0; rx2 < 1600; rx2 += 20) {
+          const wv = Math.sin((rx2 + Date.now() * 0.001 + rp * 50) * 0.08) * 3;
+          if (rx2 === 0) ctx.moveTo(sx + rx2, ry2 + wv);
+          else ctx.lineTo(sx + rx2, ry2 + wv);
+        }
+        ctx.stroke();
+      }
+    } else if (key === 'athis') {
+      // Rolling hill contours
+      ctx.strokeStyle = 'rgba(80,120,60,0.2)';
+      ctx.lineWidth = 2;
+      for (let h = 0; h < 4; h++) {
+        ctx.beginPath();
+        ctx.moveTo(sx, sy + 200 + h * 250);
+        ctx.quadraticCurveTo(sx + 400, sy + 150 + h * 250, sx + 800, sy + 220 + h * 250);
+        ctx.quadraticCurveTo(sx + 1200, sy + 170 + h * 250, sx + 1600, sy + 210 + h * 250);
+        ctx.stroke();
+      }
+    }
+
+    // Clouds (all regions)
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    for (let cl = 0; cl < 5; cl++) {
+      const cx2 = sx + ((cl * 317 + r.col * 500 + 100) % 1400);
+      const cy2 = sy + 30 + ((cl * 131 + r.row * 200) % 150);
+      ctx.beginPath();
+      ctx.ellipse(cx2, cy2, 40 + cl * 5, 12 + cl * 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(cx2 + 25, cy2 - 5, 25, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     // Region border (subtle)
     ctx.strokeStyle = 'rgba(255,255,255,0.15)';
     ctx.lineWidth = 2;
@@ -1349,29 +1448,36 @@ function drawGround() {
     ctx.font = 'bold 18px Georgia';
     ctx.fillText(`${r.emoji} ${r.name}`, sx + 10, sy + 25);
 
-    // Directional signs at borders
-    ctx.font = '13px Georgia';
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    // Directional signposts at borders
     ctx.textAlign = 'center';
-    // Right border sign
+    function drawSignpost(x, y, text, arrowDir) {
+      // Post
+      ctx.fillStyle = '#5a4a2a';
+      ctx.fillRect(x - 2, y - 5, 4, 18);
+      // Sign board
+      ctx.fillStyle = '#8a6a3a';
+      const tw = ctx.measureText(text).width + 16;
+      ctx.fillRect(x - tw/2, y - 16, tw, 16);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px Georgia';
+      ctx.fillText(arrowDir + ' ' + text, x, y - 5);
+    }
+    ctx.font = 'bold 10px Georgia';
     if (r.col < 2) {
       const rightRegion = Object.values(REGIONS).find(rr => rr.col === r.col + 1 && rr.row === r.row);
-      if (rightRegion) ctx.fillText(`→ ${rightRegion.name}`, sx + REGION_W - 60, sy + REGION_H / 2);
+      if (rightRegion) drawSignpost(sx + REGION_W - 50, sy + REGION_H / 2, rightRegion.name, '→');
     }
-    // Left border sign
     if (r.col > 0) {
       const leftRegion = Object.values(REGIONS).find(rr => rr.col === r.col - 1 && rr.row === r.row);
-      if (leftRegion) ctx.fillText(`← ${leftRegion.name}`, sx + 60, sy + REGION_H / 2);
+      if (leftRegion) drawSignpost(sx + 50, sy + REGION_H / 2, leftRegion.name, '←');
     }
-    // Bottom border sign
     if (r.row < 1) {
       const bottomRegion = Object.values(REGIONS).find(rr => rr.col === r.col && rr.row === r.row + 1);
-      if (bottomRegion) ctx.fillText(`↓ ${bottomRegion.name}`, sx + REGION_W / 2, sy + REGION_H - 15);
+      if (bottomRegion) drawSignpost(sx + REGION_W / 2, sy + REGION_H - 20, bottomRegion.name, '↓');
     }
-    // Top border sign
     if (r.row > 0) {
       const topRegion = Object.values(REGIONS).find(rr => rr.col === r.col && rr.row === r.row - 1);
-      if (topRegion) ctx.fillText(`↑ ${topRegion.name}`, sx + REGION_W / 2, sy + 25);
+      if (topRegion) drawSignpost(sx + REGION_W / 2, sy + 35, topRegion.name, '↑');
     }
     ctx.textAlign = 'left';
 
@@ -1394,6 +1500,43 @@ function drawGround() {
           else ctx.lineTo(sx + wx, waveY);
         }
         ctx.stroke();
+      }
+      // Sailboats on the ocean
+      for (let sb = 0; sb < 3; sb++) {
+        const bx = sx + REGION_W - 250 + sb * 80;
+        const by = sy + 200 + sb * 300 + Math.sin(Date.now() * 0.0005 + sb * 2) * 8;
+        // Hull
+        ctx.fillStyle = '#c0503a';
+        ctx.beginPath();
+        ctx.moveTo(bx - 12, by);
+        ctx.lineTo(bx + 12, by);
+        ctx.lineTo(bx + 8, by + 6);
+        ctx.lineTo(bx - 8, by + 6);
+        ctx.closePath();
+        ctx.fill();
+        // Sail
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.moveTo(bx, by - 20);
+        ctx.lineTo(bx + 10, by);
+        ctx.lineTo(bx, by);
+        ctx.closePath();
+        ctx.fill();
+        // Mast
+        ctx.strokeStyle = '#4a3020';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx, by - 22);
+        ctx.stroke();
+      }
+      // Foam at shore edge
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      for (let fy = 0; fy < REGION_H; fy += 20) {
+        const fx = REGION_W - 300 + Math.sin((fy * 0.1 + Date.now() * 0.002)) * 5;
+        ctx.beginPath();
+        ctx.ellipse(sx + fx, sy + fy, 8, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
@@ -1568,6 +1711,32 @@ function drawBuildings() {
         ctx.moveTo(sx + b.w / 2 - 20 - ly * 5, yy);
         ctx.lineTo(sx + b.w / 2 + 20 + ly * 5, yy);
         ctx.stroke();
+      }
+    }
+
+    if (btype === 'mexican') {
+      // Colorful awning
+      const awningColors = ['#e04040', '#40a040', '#e0c020', '#e06020'];
+      const stripeW = Math.floor(b.w / awningColors.length);
+      for (let s = 0; s < awningColors.length; s++) {
+        ctx.fillStyle = awningColors[s];
+        ctx.fillRect(sx + s * stripeW, sy + b.h - 3, stripeW, 5);
+      }
+    }
+
+    if (btype === 'hotel') {
+      // Balcony lines
+      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+      ctx.lineWidth = 1;
+      for (let fl = 1; fl < 3; fl++) {
+        const flY = sy + fl * Math.floor(b.h / 3);
+        ctx.beginPath();
+        ctx.moveTo(sx, flY);
+        ctx.lineTo(sx + b.w, flY);
+        ctx.stroke();
+        // Balcony rail
+        ctx.fillStyle = '#c0b0a0';
+        ctx.fillRect(sx, flY, b.w, 3);
       }
     }
 
@@ -1995,6 +2164,61 @@ function drawDecorations() {
         ctx.fillRect(sx, sy - 6, 3, 12);
         ctx.fillRect(sx + 10, sy - 6, 3, 12);
         break;
+      case 'papel_picado': {
+        // Mexican paper banner (string of colored triangles)
+        ctx.strokeStyle = '#5a4a3a';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx - 30, sy);
+        ctx.lineTo(sx + 30, sy);
+        ctx.stroke();
+        const ppColors = ['#e04040', '#40c040', '#e0e040', '#e060c0', '#40a0e0'];
+        for (let pp = 0; pp < 5; pp++) {
+          const px3 = sx - 24 + pp * 12;
+          ctx.fillStyle = ppColors[pp % ppColors.length];
+          ctx.beginPath();
+          ctx.moveTo(px3, sy);
+          ctx.lineTo(px3 + 10, sy);
+          ctx.lineTo(px3 + 5, sy + 8);
+          ctx.closePath();
+          ctx.fill();
+        }
+        break;
+      }
+      case 'butterfly': {
+        // Animated butterfly
+        const bTime = Date.now() * 0.005 + d.x;
+        const bx2 = sx + Math.sin(bTime) * 15;
+        const by2 = sy + Math.cos(bTime * 0.7) * 8;
+        const wingSpread = Math.abs(Math.sin(Date.now() * 0.01 + d.x));
+        const bColors = ['#e06090', '#f0a030', '#60a0e0', '#e0e040'];
+        ctx.fillStyle = bColors[Math.floor((d.x * 3 + d.y) % bColors.length)];
+        ctx.beginPath();
+        ctx.ellipse(bx2 - 4, by2, 4, 3 * wingSpread, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(bx2 + 4, by2, 4, 3 * wingSpread, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        // Body
+        ctx.fillStyle = '#2a2a2a';
+        ctx.fillRect(bx2 - 0.5, by2 - 3, 1, 6);
+        break;
+      }
+      case 'swallow': {
+        // Animated bird in flight
+        const sTime = Date.now() * 0.003 + d.x * 0.1;
+        const sx2 = sx + Math.sin(sTime) * 30;
+        const sy2 = sy + Math.cos(sTime * 0.5) * 10;
+        ctx.strokeStyle = '#2a2a3a';
+        ctx.lineWidth = 1.5;
+        const wingY = Math.sin(Date.now() * 0.015 + d.x) * 4;
+        ctx.beginPath();
+        ctx.moveTo(sx2 - 8, sy2 + wingY);
+        ctx.quadraticCurveTo(sx2 - 3, sy2 - 3, sx2, sy2);
+        ctx.quadraticCurveTo(sx2 + 3, sy2 - 3, sx2 + 8, sy2 + wingY);
+        ctx.stroke();
+        break;
+      }
       case 'pond':
         ctx.fillStyle = '#3a7ab0';
         ctx.beginPath();
