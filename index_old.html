@@ -12,35 +12,18 @@ canvas { display: block; cursor: pointer; touch-action: none; }
 /* Start screen */
 #start-screen {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background:
-    radial-gradient(ellipse at 70% 15%, rgba(245,200,66,0.18) 0%, transparent 55%),
-    radial-gradient(ellipse at 20% 85%, rgba(15,52,96,0.6) 0%, transparent 60%),
-    linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   z-index: 100; color: #fff; text-align: center;
-  overflow: hidden;
-}
-#start-screen::after {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(circle at 50% 50%, transparent 55%, rgba(0,0,0,0.5) 100%);
-  pointer-events: none;
 }
 #start-screen h1 {
   font-size: clamp(28px, 6vw, 56px); margin-bottom: 10px;
-  font-style: italic; color: #f3e2c2;
-  text-shadow: 0 0 24px rgba(245,200,66,0.45), 2px 2px 8px rgba(0,0,0,0.6);
-  animation: titleGlow 4s ease-in-out infinite;
-  position: relative; z-index: 1;
-}
-@keyframes titleGlow {
-  0%, 100% { text-shadow: 0 0 18px rgba(245,200,66,0.35), 2px 2px 8px rgba(0,0,0,0.6); }
-  50% { text-shadow: 0 0 34px rgba(245,200,66,0.6), 2px 2px 8px rgba(0,0,0,0.6); }
+  font-style: italic; color: #e8d5b7;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
 }
 #start-screen .subtitle {
   font-size: clamp(14px, 3vw, 22px); color: #c9a96e; margin-bottom: 50px;
-  position: relative; z-index: 1;
 }
-#start-screen button { position: relative; z-index: 1; }
 #start-screen button {
   display: block; margin: 10px auto; padding: 16px 40px;
   font-size: clamp(16px, 3vw, 22px); font-family: 'Georgia', serif;
@@ -196,9 +179,6 @@ canvas { display: block; cursor: pointer; touch-action: none; }
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 
-// ---- Display dimensions (logical CSS pixels) + HiDPI scaling ----
-let DW = window.innerWidth, DH = window.innerHeight, DPR = 1;
-
 // ---- Constants ----
 const TILE = 40;
 const PLAYER_SPEED = 3.5;
@@ -271,23 +251,16 @@ function newGameState() {
 let camX = 0, camY = 0;
 
 function updateCamera() {
-  camX = gameState.playerX - DW / 2;
-  camY = gameState.playerY - DH / 2;
-  camX = Math.max(0, Math.min(camX, WORLD_W - DW));
-  camY = Math.max(0, Math.min(camY, WORLD_H - DH));
+  camX = gameState.playerX - canvas.width / 2;
+  camY = gameState.playerY - canvas.height / 2;
+  camX = Math.max(0, Math.min(camX, WORLD_W - canvas.width));
+  camY = Math.max(0, Math.min(camY, WORLD_H - canvas.height));
 }
 
 // ---- Resize ----
 function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2.5);
-  DW = window.innerWidth;
-  DH = window.innerHeight;
-  canvas.style.width = DW + 'px';
-  canvas.style.height = DH + 'px';
-  canvas.width = Math.floor(DW * DPR);
-  canvas.height = Math.floor(DH * DPR);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
 window.addEventListener('resize', resize);
 resize();
@@ -1162,10 +1135,10 @@ function updateEndSequence() {
   endDancePhase = endSequenceTimer;
   // Lock camera on the gathering area
   const vo = regionOrigin('velizy');
-  camX = vo.x + 350 - DW / 2;
-  camY = vo.y + 730 - DH / 2;
-  camX = Math.max(0, Math.min(camX, WORLD_W - DW));
-  camY = Math.max(0, Math.min(camY, WORLD_H - DH));
+  camX = vo.x + 350 - canvas.width / 2;
+  camY = vo.y + 730 - canvas.height / 2;
+  camX = Math.max(0, Math.min(camX, WORLD_W - canvas.width));
+  camY = Math.max(0, Math.min(camY, WORLD_H - canvas.height));
   if (endSequenceTimer > END_DANCE_DURATION) {
     endSequenceActive = false;
     document.getElementById('end-screen').style.display = 'flex';
@@ -1428,33 +1401,17 @@ function drawGround() {
     const sy = oy - camY;
 
     // Skip if off-screen
-    if (sx + REGION_W < 0 || sx > DW || sy + REGION_H < 0 || sy > DH) continue;
+    if (sx + REGION_W < 0 || sx > canvas.width || sy + REGION_H < 0 || sy > canvas.height) continue;
 
-    // Ground — soft vertical gradient gives the terrain depth and lighting
-    const gGrad = ctx.createLinearGradient(sx, sy, sx, sy + REGION_H);
-    gGrad.addColorStop(0, lightenColor(r.color, 0.10));
-    gGrad.addColorStop(0.5, r.color);
-    gGrad.addColorStop(1, darkenColor(r.color, 0.10));
-    ctx.fillStyle = gGrad;
+    // Ground
+    ctx.fillStyle = r.color;
     ctx.fillRect(sx, sy, REGION_W, REGION_H);
-
-    // Large soft mottling blobs for organic terrain variation
-    for (let m = 0; m < 10; m++) {
-      const mx = sx + ((m * 263 + r.col * 90 + 80) % REGION_W);
-      const my = sy + ((m * 197 + r.row * 70 + 60) % REGION_H);
-      const mr = 120 + ((m * 53) % 90);
-      const blob = ctx.createRadialGradient(mx, my, 0, mx, my, mr);
-      blob.addColorStop(0, (m % 2 ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'));
-      blob.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = blob;
-      ctx.fillRect(mx - mr, my - mr, mr * 2, mr * 2);
-    }
 
     // Ground texture - grass-like variation
     const startTileX = Math.max(0, Math.floor(-sx / TILE));
-    const endTileX = Math.min(40, Math.ceil((DW - sx) / TILE));
+    const endTileX = Math.min(40, Math.ceil((canvas.width - sx) / TILE));
     const startTileY = Math.max(0, Math.floor(-sy / TILE));
-    const endTileY = Math.min(30, Math.ceil((DH - sy) / TILE));
+    const endTileY = Math.min(30, Math.ceil((canvas.height - sy) / TILE));
     for (let tx = startTileX; tx < endTileX; tx++) {
       for (let ty = startTileY; ty < endTileY; ty++) {
         const hash = ((tx * 7 + ty * 13 + r.col * 31 + r.row * 53) % 17) / 17;
@@ -1825,32 +1782,17 @@ function drawBuildings() {
   for (const b of allBuildings) {
     const sx = b.x - camX;
     const sy = b.y - camY;
-    if (sx + b.w < 0 || sx > DW || sy + b.h < 0 || sy > DH) continue;
+    if (sx + b.w < 0 || sx > canvas.width || sy + b.h < 0 || sy > canvas.height) continue;
 
     const btype = b.type || 'default';
 
-    // Soft blurred drop shadow (parks/gardens skip the solid block)
-    if (btype !== 'park' && btype !== 'garden' && btype !== 'plaza') {
-      ctx.save();
-      ctx.shadowColor = 'rgba(0,0,0,0.35)';
-      ctx.shadowBlur = 14;
-      ctx.shadowOffsetX = 6;
-      ctx.shadowOffsetY = 10;
-      ctx.fillStyle = b.color;
-      ctx.fillRect(sx, sy, b.w, b.h);
-      ctx.restore();
-    }
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(sx + 4, sy + 4, b.w, b.h);
 
-    // Main building body — gradient gives sunlit/shaded faces
-    const bGrad = ctx.createLinearGradient(sx, sy, sx + b.w, sy + b.h);
-    bGrad.addColorStop(0, lightenColor(b.color, 0.12));
-    bGrad.addColorStop(0.55, b.color);
-    bGrad.addColorStop(1, darkenColor(b.color, 0.14));
-    ctx.fillStyle = bGrad;
+    // Main building body
+    ctx.fillStyle = b.color;
     ctx.fillRect(sx, sy, b.w, b.h);
-    // Sunlit top edge highlight
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    ctx.fillRect(sx, sy, b.w, 3);
 
     // Building details based on type
     if (btype === 'house' || btype === 'shop' || btype === 'parisian' || btype === 'school' || btype === 'mexican' || btype === 'hotel' || btype === 'farm') {
@@ -1866,16 +1808,7 @@ function drawBuildings() {
         for (let wc = 0; wc < winCols; wc++) {
           const wx = sx + 15 + wc * (b.w - 20) / Math.max(winCols, 1);
           const wy = sy + 15 + wr * 35;
-          // Glassy reflective pane
-          const wGrad = ctx.createLinearGradient(wx, wy, wx + 14, wy + 12);
-          wGrad.addColorStop(0, '#eaf4ff');
-          wGrad.addColorStop(0.5, '#bcd6f2');
-          wGrad.addColorStop(1, '#8fb4dc');
-          ctx.fillStyle = wGrad;
           ctx.fillRect(wx, wy, 14, 12);
-          // Diagonal glint
-          ctx.fillStyle = 'rgba(255,255,255,0.5)';
-          ctx.fillRect(wx + 1, wy + 1, 4, 4);
           // Window frame
           ctx.strokeStyle = 'rgba(0,0,0,0.3)';
           ctx.lineWidth = 1;
@@ -1990,13 +1923,6 @@ function darkenColor(hex, amount) {
   return `rgb(${r},${g},${bl})`;
 }
 
-function lightenColor(hex, amount) {
-  const r = Math.min(255, parseInt(hex.slice(1,3), 16) + Math.floor(255 * amount));
-  const g = Math.min(255, parseInt(hex.slice(3,5), 16) + Math.floor(255 * amount));
-  const bl = Math.min(255, parseInt(hex.slice(5,7), 16) + Math.floor(255 * amount));
-  return `rgb(${r},${g},${bl})`;
-}
-
 function drawMaze() {
   for (let r = 0; r < MAZE_ROWS; r++) {
     for (let c = 0; c < MAZE_COLS; c++) {
@@ -2005,7 +1931,7 @@ function drawMaze() {
       const sx = wx - camX;
       const sy = wy - camY;
 
-      if (sx + MAZE_CELL < 0 || sx > DW || sy + MAZE_CELL < 0 || sy > DH) continue;
+      if (sx + MAZE_CELL < 0 || sx > canvas.width || sy + MAZE_CELL < 0 || sy > canvas.height) continue;
 
       if (MAZE_GRID[r][c] === 1) {
         // Hedge wall
@@ -2030,7 +1956,7 @@ function drawMaze() {
   for (const d of mazeDecos) {
     const sx = d.x - camX;
     const sy = d.y - camY;
-    if (sx < -30 || sx > DW + 30 || sy < -30 || sy > DH + 30) continue;
+    if (sx < -30 || sx > canvas.width + 30 || sy < -30 || sy > canvas.height + 30) continue;
     ctx.font = '20px serif';
     ctx.textAlign = 'center';
     let emoji = '🥕';
@@ -2046,79 +1972,46 @@ function drawDecorations() {
   for (const d of allDecorations) {
     const sx = d.x - camX;
     const sy = d.y - camY;
-    if (sx < -50 || sx > DW + 50 || sy < -50 || sy > DH + 50) continue;
+    if (sx < -50 || sx > canvas.width + 50 || sy < -50 || sy > canvas.height + 50) continue;
 
     ctx.textAlign = 'center';
 
     switch (d.type) {
-      case 'tree': {
-        // Ground shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.18)';
-        ctx.beginPath();
-        ctx.ellipse(sx + 4, sy + 11, 14, 5, 0, 0, Math.PI * 2);
-        ctx.fill();
-        // Trunk with gradient
-        const trGrad = ctx.createLinearGradient(sx - 3, sy, sx + 3, sy);
-        trGrad.addColorStop(0, '#6a4422');
-        trGrad.addColorStop(0.5, '#7a5230');
-        trGrad.addColorStop(1, '#4a2e16');
-        ctx.fillStyle = trGrad;
+      case 'tree':
+        // Draw a tree with trunk and canopy
+        ctx.fillStyle = '#5a3a1a';
         ctx.fillRect(sx - 3, sy - 5, 6, 16);
-        // Layered canopy with radial shading
-        const canopy = ctx.createRadialGradient(sx - 4, sy - 16, 2, sx, sy - 12, 16);
-        canopy.addColorStop(0, '#6fc24a');
-        canopy.addColorStop(0.6, '#479a30');
-        canopy.addColorStop(1, '#2f7320');
-        ctx.fillStyle = canopy;
+        ctx.fillStyle = '#3a8a2a';
         ctx.beginPath();
-        ctx.arc(sx, sy - 12, 13, 0, Math.PI * 2);
-        ctx.arc(sx - 7, sy - 8, 8, 0, Math.PI * 2);
-        ctx.arc(sx + 7, sy - 10, 8, 0, Math.PI * 2);
+        ctx.arc(sx, sy - 12, 12, 0, Math.PI * 2);
         ctx.fill();
-        // Highlight
-        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.fillStyle = '#4a9a3a';
         ctx.beginPath();
-        ctx.arc(sx - 4, sy - 16, 4, 0, Math.PI * 2);
+        ctx.arc(sx - 5, sy - 8, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(sx + 6, sy - 10, 7, 0, Math.PI * 2);
         ctx.fill();
         break;
-      }
-      case 'pine': {
-        // Ground shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.18)';
-        ctx.beginPath();
-        ctx.ellipse(sx + 3, sy + 11, 12, 4, 0, 0, Math.PI * 2);
-        ctx.fill();
-        // Trunk
+      case 'pine':
+        // Pine tree (triangle)
         ctx.fillStyle = '#4a3010';
         ctx.fillRect(sx - 3, sy, 6, 14);
-        // Layered cone with gradient
-        const pineGrad = ctx.createLinearGradient(sx - 12, sy, sx + 12, sy);
-        pineGrad.addColorStop(0, '#1f5a1f');
-        pineGrad.addColorStop(0.5, '#2f7a2a');
-        pineGrad.addColorStop(1, '#174617');
-        ctx.fillStyle = pineGrad;
+        ctx.fillStyle = '#2a6a2a';
         ctx.beginPath();
         ctx.moveTo(sx, sy - 22);
         ctx.lineTo(sx - 12, sy + 2);
         ctx.lineTo(sx + 12, sy + 2);
         ctx.closePath();
         ctx.fill();
+        ctx.fillStyle = '#1a5a1a';
         ctx.beginPath();
         ctx.moveTo(sx, sy - 16);
         ctx.lineTo(sx - 10, sy + 6);
         ctx.lineTo(sx + 10, sy + 6);
         ctx.closePath();
         ctx.fill();
-        // Snow dusting highlight
-        ctx.fillStyle = 'rgba(255,255,255,0.25)';
-        ctx.beginPath();
-        ctx.moveTo(sx, sy - 22);
-        ctx.lineTo(sx - 4, sy - 14);
-        ctx.lineTo(sx + 4, sy - 14);
-        ctx.closePath();
-        ctx.fill();
         break;
-      }
       case 'plane_tree':
         // Tall Parisian plane tree
         ctx.fillStyle = '#6a5a3a';
@@ -2742,32 +2635,19 @@ function drawItems() {
     if (item.picked) continue;
     const sx = item.x - camX;
     const sy = item.y - camY;
-    if (sx < -30 || sx > DW + 30 || sy < -30 || sy > DH + 30) continue;
+    if (sx < -30 || sx > canvas.width + 30 || sy < -30 || sy > canvas.height + 30) continue;
 
     // Floating animation
     const floatY = Math.sin(Date.now() * 0.003 + item.x) * 5;
-
-    // Pulsing radial glow behind the item
-    const pulse = 16 + Math.sin(Date.now() * 0.005 + item.x) * 4;
-    const glow = ctx.createRadialGradient(sx, sy + floatY - 6, 0, sx, sy + floatY - 6, pulse);
-    glow.addColorStop(0, 'rgba(255,224,120,0.55)');
-    glow.addColorStop(0.5, 'rgba(255,210,90,0.22)');
-    glow.addColorStop(1, 'rgba(255,210,90,0)');
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(sx, sy + floatY - 6, pulse, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Soft ground shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    ctx.beginPath();
-    ctx.ellipse(sx, sy + 14, 9, 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Item icon
     ctx.font = '28px serif';
     ctx.textAlign = 'center';
     ctx.fillText(item.emoji, sx, sy + floatY);
+
+    // Glow
+    ctx.beginPath();
+    ctx.arc(sx, sy + floatY - 5, 18, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 220, 100, 0.15)';
+    ctx.fill();
     ctx.textAlign = 'left';
   }
 }
@@ -2776,31 +2656,21 @@ function drawNPCs() {
   for (const npc of npcs) {
     const sx = npc.x - camX;
     const sy = npc.y - camY;
-    if (sx < -40 || sx > DW + 40 || sy < -40 || sy > DH + 40) continue;
+    if (sx < -40 || sx > canvas.width + 40 || sy < -40 || sy > canvas.height + 40) continue;
 
-    // Soft ground shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
     ctx.beginPath();
-    ctx.ellipse(sx, sy + 16, 13, 5, 0, 0, Math.PI * 2);
+    ctx.ellipse(sx, sy + 16, 12, 5, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Body — radial gradient for a rounded, lit look
-    const npcGrad = ctx.createRadialGradient(sx - 5, sy - 5, 2, sx, sy, 16);
-    npcGrad.addColorStop(0, lightenColor(npc.color, 0.22));
-    npcGrad.addColorStop(0.7, npc.color);
-    npcGrad.addColorStop(1, darkenColor(npc.color, 0.18));
-    ctx.fillStyle = npcGrad;
+    // Body
+    ctx.fillStyle = npc.color;
     ctx.beginPath();
     ctx.arc(sx, sy, 14, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = 'rgba(0,0,0,0.3)';
     ctx.lineWidth = 2;
-    ctx.stroke();
-    // Rim highlight
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(sx, sy, 13, Math.PI * 1.05, Math.PI * 1.65);
     ctx.stroke();
 
     // Emoji face
@@ -2808,16 +2678,8 @@ function drawNPCs() {
     ctx.textAlign = 'center';
     ctx.fillText(npc.emoji, sx, sy + 6);
 
-    // Candle — with a warm glow halo
+    // Candle
     if (npc.hasCandle) {
-      const flicker = 9 + Math.sin(Date.now() * 0.012 + sx) * 2;
-      const halo = ctx.createRadialGradient(sx + 16, sy - 12, 0, sx + 16, sy - 12, flicker);
-      halo.addColorStop(0, 'rgba(255,220,120,0.55)');
-      halo.addColorStop(1, 'rgba(255,220,120,0)');
-      ctx.fillStyle = halo;
-      ctx.beginPath();
-      ctx.arc(sx + 16, sy - 12, flicker, 0, Math.PI * 2);
-      ctx.fill();
       ctx.font = '14px serif';
       ctx.fillText('🕯️', sx + 16, sy - 10);
     }
@@ -2853,27 +2715,14 @@ function drawPlayer() {
   const sx = gameState.playerX - camX;
   const sy = gameState.playerY - camY;
 
-  // Soft ground shadow
+  // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.3)';
   ctx.beginPath();
-  ctx.ellipse(sx, sy + 18, 15, 6, 0, 0, Math.PI * 2);
+  ctx.ellipse(sx, sy + 18, 14, 6, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Warm aura glow
-  const aura = ctx.createRadialGradient(sx, sy, 8, sx, sy, 26);
-  aura.addColorStop(0, 'rgba(245,200,66,0.28)');
-  aura.addColorStop(1, 'rgba(245,200,66,0)');
-  ctx.fillStyle = aura;
-  ctx.beginPath();
-  ctx.arc(sx, sy, 26, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Body — radial gradient for a rounded, lit look
-  const pGrad = ctx.createRadialGradient(sx - 6, sy - 6, 2, sx, sy, 18);
-  pGrad.addColorStop(0, '#ffe79a');
-  pGrad.addColorStop(0.7, '#f5c842');
-  pGrad.addColorStop(1, '#d9a826');
-  ctx.fillStyle = pGrad;
+  // Body
+  ctx.fillStyle = '#f5c842';
   ctx.beginPath();
   ctx.arc(sx, sy, 16, 0, Math.PI * 2);
   ctx.fill();
@@ -3025,99 +2874,11 @@ function drawMinimap() {
   mctx.textAlign = 'left';
 }
 
-// ---- Environmental lighting: drifting cloud shadows over the ground ----
-function drawGroundShade() {
-  const t = Date.now() * 0.012;
-  for (let i = 0; i < 6; i++) {
-    const wx = ((i * 813 + t * (1.0 + i * 0.15)) % (WORLD_W + 600)) - 300;
-    const wy = (i * 547) % WORLD_H;
-    const sx = wx - camX, sy = wy - camY;
-    const rad = 220 + (i % 3) * 80;
-    if (sx < -rad || sx > DW + rad || sy < -rad || sy > DH + rad) continue;
-    const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, rad);
-    g.addColorStop(0, 'rgba(0,0,0,0.06)');
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(sx - rad, sy - rad, rad * 2, rad * 2);
-  }
-}
-
-// ---- Ambient floating particles (pollen / snow) ----
-const ambientParticles = [];
-function initAmbientParticles() {
-  ambientParticles.length = 0;
-  for (let i = 0; i < 70; i++) {
-    ambientParticles.push({
-      x: Math.random() * DW,
-      y: Math.random() * DH,
-      r: 0.7 + Math.random() * 2.0,
-      ph: Math.random() * Math.PI * 2,
-      sp: 0.5 + Math.random() * 1.6,
-    });
-  }
-}
-initAmbientParticles();
-
-// ---- Atmosphere: sun wash, particles, vignette (post-process layer) ----
-function drawAtmosphere() {
-  const region = gameState ? getCurrentRegion(gameState.playerX, gameState.playerY) : 'velizy';
-  const t = Date.now();
-  const snow = (region === 'grenoble');
-
-  // Warm directional sunlight wash from the upper-right
-  ctx.save();
-  ctx.globalCompositeOperation = 'lighter';
-  const sun = ctx.createRadialGradient(DW * 0.82, DH * 0.1, 0, DW * 0.82, DH * 0.1, Math.max(DW, DH) * 0.95);
-  let warm = 'rgba(255,228,165,0.10)';
-  if (region === 'acapulco') warm = 'rgba(255,205,120,0.16)';
-  else if (region === 'paris') warm = 'rgba(220,225,255,0.07)';
-  else if (region === 'grenoble') warm = 'rgba(220,238,255,0.10)';
-  else if (region === 'cuernavaca') warm = 'rgba(255,220,150,0.13)';
-  sun.addColorStop(0, warm);
-  sun.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = sun;
-  ctx.fillRect(0, 0, DW, DH);
-  ctx.restore();
-
-  // Particles
-  for (const p of ambientParticles) {
-    if (snow) {
-      p.y += 0.5 + p.sp * 0.5;
-      p.x += Math.sin(t * 0.001 + p.ph) * 0.6;
-      if (p.y > DH + 5) { p.y = -5; p.x = Math.random() * DW; }
-    } else {
-      p.y -= 0.12 + p.sp * 0.12;
-      p.x += Math.sin(t * 0.0006 + p.ph) * 0.5;
-      if (p.y < -5) { p.y = DH + 5; p.x = Math.random() * DW; }
-    }
-    if (p.x < -5) p.x = DW + 5; else if (p.x > DW + 5) p.x = -5;
-    const tw = 0.4 + 0.35 * (0.5 + 0.5 * Math.sin(t * 0.004 + p.ph));
-    const col = snow ? `rgba(255,255,255,${tw})` : `rgba(255,242,200,${tw * 0.8})`;
-    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2.2);
-    g.addColorStop(0, col);
-    g.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r * 2.2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Cinematic vignette
-  const vg = ctx.createRadialGradient(DW / 2, DH / 2, Math.min(DW, DH) * 0.36, DW / 2, DH / 2, Math.max(DW, DH) * 0.78);
-  vg.addColorStop(0, 'rgba(0,0,0,0)');
-  vg.addColorStop(1, 'rgba(8,6,18,0.40)');
-  ctx.fillStyle = vg;
-  ctx.fillRect(0, 0, DW, DH);
-}
-
 // ---- Main render ----
 function render() {
-  // Reset transform & apply HiDPI scale so 1 unit = 1 CSS pixel
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.clearRect(0, 0, DW, DH);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   drawGround();
-  drawGroundShade();
   drawBuildings();
   drawMaze();
   drawDecorations();
@@ -3126,7 +2887,6 @@ function render() {
   drawNPCs();
   drawPlayer();
   drawEndSequenceCake();
-  drawAtmosphere();
   drawMinimap();
 }
 
