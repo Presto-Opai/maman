@@ -105,11 +105,14 @@ canvas { display: block; cursor: pointer; touch-action: none; }
   display: flex; align-items: center; gap: 10px;
 }
 #sculpture-game .sculpture-part {
-  width: clamp(80px, 20vw, 140px); height: clamp(50px, 10vw, 70px);
-  background: #3a3a5c; border: 2px solid #c9a96e; border-radius: 6px;
+  width: clamp(90px, 22vw, 150px); height: clamp(54px, 11vw, 84px);
+  background: linear-gradient(180deg, #44446a, #32324e);
+  border: 2px solid #c9a96e; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: clamp(16px, 4vw, 26px); user-select: none;
+  user-select: none; overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.35);
 }
+#sculpture-game .sculpture-part canvas { width: 100%; height: 100%; display: block; }
 #sculpture-game .arrow-btn {
   width: 40px; height: 40px; background: #c9a96e; border: none; border-radius: 50%;
   font-size: 20px; cursor: pointer; color: #1a1a2e; font-weight: bold;
@@ -160,6 +163,12 @@ canvas { display: block; cursor: pointer; touch-action: none; }
   text-shadow: 0 0 30px rgba(245,200,66,0.5), 2px 2px 10px rgba(0,0,0,0.8);
   z-index: 15;
   pointer-events: none; opacity: 0; transition: opacity 0.5s;
+}
+#region-label .rl-i { font-style: normal; text-shadow: none; }
+#region-label .rl-f {
+  display: inline-block; width: 0.85em; height: 0.55em;
+  border-radius: 3px; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  vertical-align: baseline;
 }
 </style>
 </head>
@@ -232,29 +241,28 @@ function seededRandom() {
 }
 
 // ---- World dimensions ----
-// World is a big map: 6 regions laid out in a grid
-// Each region is 40x30 tiles = 1600x1200 px
+// Each region is a 1600x1200 landmass, placed freely on a larger map
+// and separated by open countryside — no more rigid grid.
 const REGION_W = 40 * TILE; // 1600
 const REGION_H = 30 * TILE; // 1200
 
-// Layout: 3 cols x 2 rows
-// Row 0: Vélizy | Cuernavaca | Acapulco
-// Row 1: Paris  | Grenoble   | Athis-de-l'Orne
-const WORLD_W = 3 * REGION_W; // 4800
-const WORLD_H = 2 * REGION_H; // 2400
-
+// Staggered storybook-map layout (x/y = world origin of each landmass;
+// col/row kept only for signpost adjacency)
 const REGIONS = {
-  velizy:      { col: 0, row: 0, name: 'Vélizy',          emoji: '🏫', color: '#4a7c59' },
-  cuernavaca:  { col: 1, row: 0, name: 'Cuernavaca',      emoji: '🇲🇽', color: '#c4a35a' },
-  acapulco:    { col: 2, row: 0, name: 'Acapulco',        emoji: '🏖️', color: '#d4b876' },
-  paris:       { col: 0, row: 1, name: 'Paris',           emoji: '🇫🇷', color: '#6a6a8a' },
-  grenoble:    { col: 1, row: 1, name: 'Grenoble',        emoji: '⛰️', color: '#5a7a5a' },
-  athis:       { col: 2, row: 1, name: "Athis-de-l'Orne", emoji: '🐄', color: '#6a9a4a' },
+  velizy:      { x: 0,    y: 200,  col: 0, row: 0, name: 'Vélizy',          emoji: '🏫' },
+  cuernavaca:  { x: 1750, y: 0,    col: 1, row: 0, name: 'Cuernavaca',      emoji: '🌵', flag: ['#006847','#f5f5f5','#ce1126'] },
+  acapulco:    { x: 3500, y: 300,  col: 2, row: 0, name: 'Acapulco',        emoji: '🏖️' },
+  paris:       { x: 100,  y: 1600, col: 0, row: 1, name: 'Paris',           emoji: '🗼', flag: ['#0055A4','#f5f5f5','#EF4135'] },
+  grenoble:    { x: 1850, y: 1420, col: 1, row: 1, name: 'Grenoble',        emoji: '⛰️' },
+  athis:       { x: 3600, y: 1700, col: 2, row: 1, name: "Athis-de-l'Orne", emoji: '🐄' },
 };
+
+const WORLD_W = 5200; // bounding box of the staggered layout
+const WORLD_H = 2900;
 
 function regionOrigin(regionKey) {
   const r = REGIONS[regionKey];
-  return { x: r.col * REGION_W, y: r.row * REGION_H };
+  return { x: r.x, y: r.y };
 }
 
 function regionCenter(regionKey) {
@@ -461,11 +469,11 @@ function getRegionBuildings(regionKey) {
         decorations.push({ x: ox + 50 + seededRandom()*1500, y: oy + 50 + seededRandom()*1100, type: 'paris_lamp' });
       }
       // Pigeons
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 14; i++) {
         decorations.push({ x: ox + 100 + seededRandom()*1400, y: oy + 100 + seededRandom()*1000, type: 'pigeon' });
       }
       // Café tables
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 9; i++) {
         decorations.push({ x: ox + 150 + seededRandom()*1300, y: oy + 400 + seededRandom()*700, type: 'cafe_table' });
       }
       // Flowers
@@ -521,7 +529,7 @@ function getRegionBuildings(regionKey) {
       // Mairie
       buildings.push({ x: ox+300, y: oy+200, w: 200, h: 130, color: '#8a9a7a', label: 'Mairie', labelColor: '#fff', type: 'house' });
       // Maze area (visual indicator)
-      buildings.push({ x: ox+700, y: oy+300, w: 500, h: 500, color: '#3a5a2a', label: 'Jardin-Labyrinthe', labelColor: '#cfc', type: 'garden' });
+      buildings.push({ x: ox+680, y: oy+280, w: 730, h: 730, color: '#3a5a2a', label: 'Jardin-Labyrinthe', labelColor: '#cfc', type: 'garden' });
       // Farms
       buildings.push({ x: ox+200, y: oy+600, w: 120, h: 80, color: '#7a8a5a', label: 'Ferme', labelColor: '#fff', type: 'farm' });
       buildings.push({ x: ox+100, y: oy+850, w: 110, h: 70, color: '#8a7a5a', label: 'Étable', labelColor: '#fff', type: 'farm' });
@@ -584,26 +592,30 @@ function buildWorld() {
 const MAZE_ORIGIN_X = regionOrigin('athis').x + 720;
 const MAZE_ORIGIN_Y = regionOrigin('athis').y + 320;
 const MAZE_CELL = 50;
-const MAZE_COLS = 9;
-const MAZE_ROWS = 9;
+const MAZE_COLS = 13;
+const MAZE_ROWS = 13;
 
-// Simple predefined maze (1 = wall, 0 = path)
+// Predefined maze (1 = wall, 0 = path) — a real winding labyrinth
 const MAZE_GRID = [
-  [1,1,1,1,1,1,1,1,1],
-  [1,0,0,0,1,0,0,0,1],
-  [1,0,1,0,1,0,1,0,1],
-  [1,0,1,0,0,0,1,0,1],
-  [1,0,1,1,1,0,1,0,1],
-  [1,0,0,0,0,0,1,0,1],
-  [1,1,1,0,1,1,1,0,1],
-  [1,0,0,0,0,0,0,0,1],
-  [1,1,1,0,0,0,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,1,0,0,0,0,0,1],
+  [1,0,1,1,1,0,1,0,1,1,1,0,1],
+  [1,0,1,0,0,0,0,0,0,0,1,0,1],
+  [1,0,1,0,1,1,1,1,1,0,1,0,1],
+  [1,0,1,0,1,0,0,0,1,0,1,0,1],
+  [1,0,0,0,1,0,0,0,1,0,0,0,1],
+  [1,1,1,0,1,1,1,0,1,1,1,0,1],
+  [1,0,0,0,1,0,1,0,0,0,1,0,1],
+  [1,0,1,1,1,0,1,1,1,0,1,0,1],
+  [1,0,1,0,0,0,1,0,0,0,1,0,1],
+  [1,0,0,0,1,0,0,0,1,0,0,0,1],
+  [1,1,1,1,1,1,0,1,1,1,1,1,1],
 ];
 
 // Maze entrance at bottom-center
-const MAZE_ENTRANCE = { col: 3, row: 7 };
+const MAZE_ENTRANCE = { col: 6, row: 12 };
 // Arthur & Céleste at center
-const MAZE_CENTER = { col: 3, row: 3 };
+const MAZE_CENTER = { col: 6, row: 6 };
 
 function mazeWorldPos(col, row) {
   return {
@@ -633,7 +645,7 @@ function initMazeDecos() {
     }
   }
   const types = ['carrot', 'camembert', 'cow', 'veggie'];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 9; i++) {
     const cell = pathCells[Math.floor(seededRandom() * pathCells.length)];
     const pos = mazeWorldPos(cell.c, cell.r);
     mazeDecos.push({ x: pos.x, y: pos.y, type: types[i % types.length] });
@@ -823,7 +835,7 @@ function createNPCs() {
       dialogue: () => {
         const q = gameState.quests.apolline;
         // Céleste always speaks right after Arthur
-        setTimeout(() => showDialogue('Bébé Céleste', 'Abadi abwé !'), 100);
+        setTimeout(() => showDialogue('Bébé Céleste', 'Onjour Abwé !'), 100);
         if (q.status === 'in_progress') {
           q.foundArthur = true;
           saveGame();
@@ -837,7 +849,7 @@ function createNPCs() {
       x: mazeWorldPos(MAZE_CENTER.col, MAZE_CENTER.row).x + 15,
       y: mazeWorldPos(MAZE_CENTER.col, MAZE_CENTER.row).y + 10,
       color: '#f0a0c0', emoji: '👶', hasCandle: false,
-      dialogue: () => "Abadi abwé !",
+      dialogue: () => "Onjour Abwé !",
     },
   ];
 }
@@ -1048,7 +1060,10 @@ function openSculptureGame() {
     const display = document.createElement('div');
     display.className = 'sculpture-part';
     display.id = `sculpture-part-${i}`;
-    display.textContent = part.options[0];
+    const cvOpt = document.createElement('canvas');
+    cvOpt.width = 150; cvOpt.height = 84;
+    display.appendChild(cvOpt);
+    drawSculptOption(cvOpt, i, 0);
 
     const rightBtn = document.createElement('button');
     rightBtn.className = 'arrow-btn';
@@ -1068,7 +1083,150 @@ function openSculptureGame() {
 function changeSculpturePart(partIndex, dir) {
   const part = SCULPTURE_PARTS[partIndex];
   sculptureSelections[partIndex] = (sculptureSelections[partIndex] + dir + part.options.length) % part.options.length;
-  document.getElementById(`sculpture-part-${partIndex}`).textContent = part.options[sculptureSelections[partIndex]];
+  const cvOpt = document.querySelector(`#sculpture-part-${partIndex} canvas`);
+  drawSculptOption(cvOpt, partIndex, sculptureSelections[partIndex]);
+}
+
+// ---- Hand-drawn option icons for the sculpture mini-game ----
+function drawSculptOption(cv, part, idx) {
+  const g = cv.getContext('2d');
+  g.clearRect(0, 0, cv.width, cv.height);
+  g.save();
+  g.translate(cv.width / 2, cv.height / 2);
+  g.scale(1.55, 1.55);
+  g.lineJoin = 'round'; g.lineCap = 'round';
+  const painters = [
+    [sculptHat, sculptCrown, sculptHelmet],
+    [sculptCape, sculptDress, sculptArmor],
+    [sculptBoots, sculptSlippers, sculptSneakers],
+  ];
+  painters[part][idx](g);
+  g.restore();
+}
+
+function sculptHat(g) {
+  g.fillStyle = '#7a4a2a';
+  g.beginPath(); g.ellipse(0, 8, 19, 6, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#8a5a34';
+  g.beginPath(); g.moveTo(-11, 8); g.quadraticCurveTo(-12, -10, 0, -11);
+  g.quadraticCurveTo(12, -10, 11, 8); g.closePath(); g.fill();
+  g.fillStyle = '#5a3418'; g.fillRect(-11, 2, 22, 5);
+}
+
+function sculptCrown(g) {
+  g.fillStyle = '#f0c53a';
+  g.beginPath();
+  g.moveTo(-17, 10); g.lineTo(-17, -4); g.lineTo(-8, 4); g.lineTo(0, -12);
+  g.lineTo(8, 4); g.lineTo(17, -4); g.lineTo(17, 10); g.closePath(); g.fill();
+  g.strokeStyle = '#b8901f'; g.lineWidth = 1.5; g.stroke();
+  g.fillStyle = '#e0483f';
+  g.beginPath(); g.arc(0, 4, 2.6, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#3f7fe0';
+  g.beginPath(); g.arc(-10, 6, 2, 0, Math.PI * 2); g.arc(10, 6, 2, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#f0c53a';
+  g.beginPath(); g.arc(-17, -6, 2.2, 0, Math.PI * 2); g.arc(0, -14, 2.2, 0, Math.PI * 2); g.arc(17, -6, 2.2, 0, Math.PI * 2); g.fill();
+}
+
+function sculptHelmet(g) {
+  g.fillStyle = '#9aa2ac';
+  g.beginPath(); g.moveTo(-13, 10); g.lineTo(-13, -2);
+  g.quadraticCurveTo(-13, -14, 0, -14);
+  g.quadraticCurveTo(13, -14, 13, -2); g.lineTo(13, 10); g.closePath(); g.fill();
+  g.strokeStyle = '#6a727c'; g.lineWidth = 1.5; g.stroke();
+  g.fillStyle = '#3a3f46'; g.fillRect(-9, -2, 18, 4);
+  g.fillStyle = '#e0483f';
+  g.beginPath(); g.moveTo(0, -14); g.quadraticCurveTo(7, -22, 13, -18);
+  g.quadraticCurveTo(7, -16, 4, -12); g.closePath(); g.fill();
+}
+
+function sculptCape(g) {
+  g.fillStyle = '#c03a3a';
+  g.beginPath();
+  g.moveTo(-8, -14); g.quadraticCurveTo(0, -18, 8, -14);
+  g.quadraticCurveTo(16, 0, 14, 14);
+  g.quadraticCurveTo(6, 10, 0, 13);
+  g.quadraticCurveTo(-6, 10, -14, 14);
+  g.quadraticCurveTo(-16, 0, -8, -14);
+  g.closePath(); g.fill();
+  g.strokeStyle = '#8f2626'; g.lineWidth = 1.5; g.stroke();
+  g.fillStyle = '#f0c53a';
+  g.beginPath(); g.arc(-6, -13, 1.8, 0, Math.PI * 2); g.arc(6, -13, 1.8, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#f0c53a'; g.lineWidth = 1.2;
+  g.beginPath(); g.moveTo(-5, -13); g.lineTo(5, -13); g.stroke();
+}
+
+function sculptDress(g) {
+  g.fillStyle = '#e87aa8';
+  g.beginPath();
+  g.moveTo(-5, -16); g.lineTo(5, -16); g.lineTo(6, -4);
+  g.quadraticCurveTo(18, 8, 16, 16);
+  g.quadraticCurveTo(0, 20, -16, 16);
+  g.quadraticCurveTo(-18, 8, -6, -4);
+  g.closePath(); g.fill();
+  g.strokeStyle = '#b84a78'; g.lineWidth = 1.5; g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,0.8)'; g.lineWidth = 1.2;
+  g.beginPath(); g.moveTo(-6, -4); g.quadraticCurveTo(0, -1, 6, -4); g.stroke();
+  g.strokeStyle = '#e87aa8'; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(-5, -16); g.lineTo(-3, -20); g.moveTo(5, -16); g.lineTo(3, -20); g.stroke();
+  g.fillStyle = '#fff';
+  for (const p of [[-8, 8], [0, 12], [9, 7]]) { g.beginPath(); g.arc(p[0], p[1], 1.3, 0, Math.PI * 2); g.fill(); }
+}
+
+function sculptArmor(g) {
+  g.fillStyle = '#a8b0ba';
+  g.beginPath();
+  g.moveTo(-12, -14); g.lineTo(12, -14); g.lineTo(14, -2);
+  g.quadraticCurveTo(12, 12, 0, 16);
+  g.quadraticCurveTo(-12, 12, -14, -2);
+  g.closePath(); g.fill();
+  g.strokeStyle = '#6a727c'; g.lineWidth = 1.5; g.stroke();
+  g.beginPath(); g.moveTo(0, -14); g.lineTo(0, 16); g.stroke();
+  g.beginPath(); g.moveTo(-13, -6); g.quadraticCurveTo(0, 0, 13, -6); g.stroke();
+  g.fillStyle = '#6a727c';
+  for (const p of [[-9, -11], [9, -11], [-10, 4], [10, 4]]) { g.beginPath(); g.arc(p[0], p[1], 1.4, 0, Math.PI * 2); g.fill(); }
+}
+
+function sculptBoots(g) {
+  for (const off of [-19, 3]) {
+    g.fillStyle = '#7a4a2a';
+    g.beginPath();
+    g.moveTo(off, -12); g.lineTo(off + 8, -12); g.lineTo(off + 8, 4);
+    g.lineTo(off + 15, 8); g.lineTo(off + 15, 12); g.lineTo(off, 12);
+    g.closePath(); g.fill();
+    g.strokeStyle = '#4a2a12'; g.lineWidth = 1.4; g.stroke();
+    g.fillStyle = '#4a2a12'; g.fillRect(off, 9, 15, 3);
+    g.fillStyle = '#a8743f'; g.fillRect(off, -12, 8, 3);
+  }
+}
+
+function sculptSlippers(g) {
+  for (const [off, tilt] of [[-9, -0.12], [9, 0.12]]) {
+    g.save(); g.translate(off, 3); g.rotate(tilt);
+    g.strokeStyle = '#d87096'; g.lineWidth = 1.4;
+    g.beginPath(); g.moveTo(-4, 1); g.lineTo(3, -13); g.moveTo(4, 1); g.lineTo(-3, -13); g.stroke();
+    g.fillStyle = '#f0a0bc';
+    g.beginPath(); g.ellipse(0, 4, 8.5, 5, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#d87096'; g.lineWidth = 1;
+    g.beginPath(); g.ellipse(0, 4, 8.5, 5, 0, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = '#fce4ec';
+    g.beginPath(); g.ellipse(0, 3, 5, 2.6, 0, 0, Math.PI * 2); g.fill();
+    g.restore();
+  }
+}
+
+function sculptSneakers(g) {
+  g.fillStyle = '#f5f5f5';
+  g.beginPath();
+  g.moveTo(-18, 6); g.lineTo(-18, -6); g.quadraticCurveTo(-10, -10, -2, -8);
+  g.quadraticCurveTo(8, -6, 16, 0); g.quadraticCurveTo(20, 3, 18, 6);
+  g.closePath(); g.fill();
+  g.strokeStyle = '#b8bcc4'; g.lineWidth = 1.4; g.stroke();
+  g.fillStyle = '#3f7fe0';
+  g.beginPath(); g.moveTo(-18, 6); g.lineTo(18, 6); g.lineTo(17, 10); g.lineTo(-18, 10); g.closePath(); g.fill();
+  g.strokeStyle = '#3f7fe0'; g.lineWidth = 1.6;
+  g.beginPath(); g.moveTo(-6, -8); g.lineTo(-1, 6); g.moveTo(0, -8); g.lineTo(5, 6); g.stroke();
+  g.strokeStyle = '#9aa2ac'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(-14, -4); g.lineTo(-7, -2); g.moveTo(-14, -1); g.lineTo(-7, 1); g.stroke();
 }
 
 document.getElementById('sculpture-validate').addEventListener('click', () => {
@@ -1085,22 +1243,26 @@ document.getElementById('sculpture-validate').addEventListener('click', () => {
 
 // ---- Region detection ----
 function getCurrentRegion(px, py) {
+  // Inside a landmass → that region; in the open countryside → nearest one
+  let best = 'velizy', bd = Infinity;
   for (const [key, r] of Object.entries(REGIONS)) {
-    const ox = r.col * REGION_W;
-    const oy = r.row * REGION_H;
-    if (px >= ox && px < ox + REGION_W && py >= oy && py < oy + REGION_H) {
-      return key;
-    }
+    if (px >= r.x && px < r.x + REGION_W && py >= r.y && py < r.y + REGION_H) return key;
+    const cx = r.x + REGION_W / 2, cy = r.y + REGION_H / 2;
+    const d = (px - cx) * (px - cx) + (py - cy) * (py - cy);
+    if (d < bd) { bd = d; best = key; }
   }
-  return 'velizy';
+  return best;
 }
 
 let lastRegion = 'velizy';
 let regionLabelTimer = 0;
 
-function showRegionLabel(name, emoji) {
+function showRegionLabel(name, emoji, flag) {
   const label = document.getElementById('region-label');
-  label.textContent = `${emoji} ${name}`;
+  const icon = flag
+    ? `<span class="rl-f" style="background:linear-gradient(90deg, ${flag[0]} 33.4%, ${flag[1]} 33.4% 66.7%, ${flag[2]} 66.7%)"></span>`
+    : `<span class="rl-i">${emoji}</span>`;
+  label.innerHTML = `${icon} ${name}`;
   label.style.opacity = '1';
   regionLabelTimer = 120; // frames
 }
@@ -1241,30 +1403,32 @@ function handleInput(clientX, clientY) {
   gameState.targetItem = null;
   gameState.targetCourRoland = false;
 
-  // Check NPC click
+  // Check NPC click — pick the NEAREST one in range, so overlapping
+  // characters (Arthur / Bébé Céleste) are each clickable
+  let bestNpc = null, bestNpcD = NPC_INTERACT_DIST;
   for (const npc of npcs) {
-    const dx = worldX - npc.x;
-    const dy = worldY - npc.y;
-    if (Math.sqrt(dx * dx + dy * dy) < NPC_INTERACT_DIST) {
-      // Walk to NPC then interact
-      gameState.targetX = npc.x;
-      gameState.targetY = npc.y;
-      gameState.targetNPC = npc;
-      return;
-    }
+    const d = Math.hypot(worldX - npc.x, worldY - npc.y);
+    if (d < bestNpcD) { bestNpcD = d; bestNpc = npc; }
+  }
+  if (bestNpc) {
+    gameState.targetX = bestNpc.x;
+    gameState.targetY = bestNpc.y;
+    gameState.targetNPC = bestNpc;
+    return;
   }
 
-  // Check item click
+  // Check item click — nearest in range
+  let bestItem = null, bestItemD = ITEM_PICKUP_DIST;
   for (const item of items) {
     if (item.picked) continue;
-    const dx = worldX - item.x;
-    const dy = worldY - item.y;
-    if (Math.sqrt(dx * dx + dy * dy) < ITEM_PICKUP_DIST) {
-      gameState.targetX = item.x;
-      gameState.targetY = item.y;
-      gameState.targetItem = item;
-      return;
-    }
+    const d = Math.hypot(worldX - item.x, worldY - item.y);
+    if (d < bestItemD) { bestItemD = d; bestItem = item; }
+  }
+  if (bestItem) {
+    gameState.targetX = bestItem.x;
+    gameState.targetY = bestItem.y;
+    gameState.targetItem = bestItem;
+    return;
   }
 
   // Check Cour Roland click (sculpture mini-game)
@@ -1411,7 +1575,7 @@ function update() {
     lastRegion = region;
     gameState.currentRegion = region;
     const r = REGIONS[region];
-    showRegionLabel(r.name, r.emoji);
+    showRegionLabel(r.name, r.emoji, r.flag);
   }
 
   // Region label fade
@@ -1464,6 +1628,7 @@ const THEME = {
   paris:      { gTop:'#aab4c6', gBot:'#828ea6', grass:'#8a93a6', path:'#9a93a0', water:'#5a8fb8', roof:'#4a4f63', accent:'#c9b7a0' },
   grenoble:   { gTop:'#cfe6d6', gBot:'#7aa37f', grass:'#6f9c6f', path:'#b8a98e', water:'#6fb4d6', roof:'#6a4a3a', accent:'#dcefff' },
   athis:      { gTop:'#aad77c', gBot:'#6fa84a', grass:'#639a44', path:'#b89a5e', water:'#5bb6c6', roof:'#8a6a3a', accent:'#d7eeb0' },
+  _wild:      { gTop:'#bdd492', gBot:'#8fb168', grass:'#86a862', path:'#b8a179', water:'#5bb6d6', roof:'#7a5a3a', accent:'#e8d5b7' },
 };
 function themeAt(wx, wy) { return THEME[getCurrentRegion(wx, wy)] || THEME.velizy; }
 
@@ -1536,6 +1701,75 @@ function specklePattern(key) {
 }
 
 // ============================================================
+//  WORLD SHAPE: organic landmasses on open countryside
+// ============================================================
+function regionBlobPath(sx, sy, w, h, seed) {
+  // Hand-painted wavy border around the region rectangle
+  const amp = 22, step = 72;
+  const wob = (i) => Math.sin(i * 2.13 + seed) * amp * 0.6 + Math.sin(i * 0.97 + seed * 1.7) * amp * 0.4;
+  ctx.beginPath();
+  let i = 0;
+  ctx.moveTo(sx, sy + wob(i));
+  for (let x = 0; x <= w; x += step, i++) ctx.lineTo(sx + x, sy + wob(i));
+  for (let y = 0; y <= h; y += step, i++) ctx.lineTo(sx + w - wob(i), sy + y);
+  for (let x = w; x >= 0; x -= step, i++) ctx.lineTo(sx + x, sy + h - wob(i));
+  for (let y = h; y >= 0; y -= step, i++) ctx.lineTo(sx + wob(i), sy + y);
+  ctx.closePath();
+}
+
+function drawWilderness() {
+  // Open countryside between the landmasses
+  ctx.fillStyle = lin(0, -camY, 0, WORLD_H - camY, '#bdd492', '#8fb168');
+  ctx.fillRect(0, 0, DW, DH);
+  ctx.save();
+  ctx.translate(-(((camX % 128) + 128) % 128), -(((camY % 128) + 128) % 128));
+  ctx.fillStyle = specklePattern('_wild');
+  ctx.fillRect(-128, -128, DW + 256, DH + 256);
+  ctx.restore();
+  // sparse meadow tufts and bushes, anchored to world coords
+  const step = 56;
+  ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+  for (let gx = Math.floor(camX / step) * step; gx < camX + DW; gx += step) {
+    for (let gy = Math.floor(camY / step) * step; gy < camY + DH; gy += step) {
+      const h = ((gx * 17 + gy * 23) % 101) / 101;
+      const ssx = gx - camX, ssy = gy - camY;
+      if (h < 0.28) {
+        ctx.strokeStyle = h < 0.14 ? '#7ea45c' : '#a3c47e';
+        ctx.beginPath(); ctx.moveTo(ssx, ssy);
+        ctx.quadraticCurveTo(ssx + 1, ssy - 4, ssx + 2, ssy - 7); ctx.stroke();
+      } else if (h > 0.982) {
+        ctx.fillStyle = radial(ssx, ssy, 9, '#7bb35e', '#4c7a3c');
+        ctx.beginPath(); ctx.arc(ssx, ssy, 9, 0, Math.PI * 2);
+        ctx.arc(ssx + 6, ssy - 2, 6, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
+}
+
+const REGION_LINKS = [
+  ['velizy', 'cuernavaca'], ['cuernavaca', 'acapulco'],
+  ['velizy', 'paris'], ['cuernavaca', 'grenoble'], ['acapulco', 'athis'],
+  ['paris', 'grenoble'], ['grenoble', 'athis'],
+];
+function drawInterRoads() {
+  // Winding country roads linking the landmasses
+  ctx.save(); ctx.lineCap = 'round';
+  for (const [a, b] of REGION_LINKS) {
+    const ca = regionCenter(a), cb = regionCenter(b);
+    const bend = ((a.length * 31 + b.length * 47) % 160) - 80;
+    const mx = (ca.x + cb.x) / 2 + bend, my = (ca.y + cb.y) / 2 - bend * 0.6;
+    for (const [w, col] of [[26, '#a5906a'], [19, '#cbb389']]) {
+      ctx.strokeStyle = col; ctx.lineWidth = w;
+      ctx.beginPath();
+      ctx.moveTo(ca.x - camX, ca.y - camY);
+      ctx.quadraticCurveTo(mx - camX, my - camY, cb.x - camX, cb.y - camY);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+// ============================================================
 //  SKY: shared cloud positions (cloud above + shadow below)
 // ============================================================
 function cloudPositions(t) {
@@ -1588,14 +1822,23 @@ function drawClouds(t) {
 function drawGroundBase() {
   const t = Date.now();
   for (const [key, r] of Object.entries(REGIONS)) {
-    const ox = r.col * REGION_W, oy = r.row * REGION_H;
+    const ox = r.x, oy = r.y;
     const sx = ox - camX, sy = oy - camY;
-    if (sx + REGION_W < 0 || sx > DW || sy + REGION_H < 0 || sy > DH) continue;
+    const pad = 40;
+    if (sx + REGION_W + pad < 0 || sx - pad > DW || sy + REGION_H + pad < 0 || sy - pad > DH) continue;
     const th = THEME[key];
+    const seed = key.length * 13 + r.col * 7 + r.row * 3;
 
-    // Base terrain gradient
+    // Organic hand-painted landmass with a soft coastline edge
+    ctx.save();
+    regionBlobPath(sx, sy, REGION_W, REGION_H, seed);
     ctx.fillStyle = lin(sx, sy, sx, sy + REGION_H, th.gTop, th.gBot);
-    ctx.fillRect(sx, sy, REGION_W, REGION_H);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(25,45,20,0.16)';
+    ctx.lineWidth = 9;
+    ctx.stroke();
+    regionBlobPath(sx, sy, REGION_W, REGION_H, seed);
+    ctx.clip();
 
     // Ground grain (cached world-anchored speckle texture)
     ctx.save();
@@ -1641,11 +1884,9 @@ function drawGroundBase() {
     drawRegionPaths(key, sx, sy);
     drawRegionTerrain(key, sx, sy, t);
 
-    // Region border + label
-    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(sx, sy, REGION_W, REGION_H);
-    drawPill(sx + 12, sy + 12, `${r.emoji} ${r.name}`, 'rgba(20,20,40,0.45)', '#fff', 13);
+    ctx.restore();
+
+    drawRegionTag(sx + 26, sy + 24, r);
     drawSignposts(r, sx, sy);
   }
 }
@@ -1855,15 +2096,26 @@ function drawRegionTerrain(key, sx, sy, t) {
   }
 }
 
-function drawPill(x, y, text, bg, fg, size) {
-  ctx.font = `bold ${size}px Georgia`;
-  const w = ctx.measureText(text).width + 16;
-  ctx.fillStyle = bg;
-  roundRectPath(x, y, w, size + 10, (size + 10) / 2);
+function drawRegionTag(x, y, r) {
+  // Corner tag: painted tricolour flag (reliable everywhere) or emoji icon
+  ctx.font = 'bold 13px Georgia';
+  const iconW = r.flag ? 22 : 20;
+  const w = ctx.measureText(r.name).width + iconW + 16;
+  ctx.fillStyle = 'rgba(20,20,40,0.45)';
+  roundRectPath(x, y, w, 23, 11.5);
   ctx.fill();
-  ctx.fillStyle = fg;
-  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  ctx.fillText(text, x + 8, y + (size + 10) / 2 + 1);
+  if (r.flag) {
+    const fx = x + 8, fy = y + 6, fw = 15, fh = 11;
+    for (let i = 0; i < 3; i++) { ctx.fillStyle = r.flag[i]; ctx.fillRect(fx + i * fw / 3, fy, fw / 3, fh); }
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1;
+    ctx.strokeRect(fx, fy, fw, fh);
+  } else {
+    ctx.textBaseline = 'middle';
+    ctx.fillText(r.emoji, x + 7, y + 13);
+  }
+  ctx.fillStyle = '#fff';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(r.name, x + iconW + 8, y + 13);
   ctx.textBaseline = 'alphabetic';
 }
 
@@ -1900,13 +2152,20 @@ function paintFlatZone(b, sx, sy) {
   roundRectPath(sx, sy, b.w, b.h, 14); ctx.fill();
   ctx.setLineDash([6,6]); ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 2;
   ctx.stroke(); ctx.setLineDash([]);
-  drawBuildingLabel(b, sx, sy, true);
+  // inscription written into the ground itself
+  ctx.font = 'italic bold 15px Georgia';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(250,255,240,0.5)';
+  ctx.fillText(b.label, sx + b.w / 2, sy + 21);
+  ctx.fillStyle = 'rgba(20,45,15,0.35)';
+  ctx.fillText(b.label, sx + b.w / 2, sy + 20);
+  ctx.textAlign = 'left';
 }
 
 function paintBuilding(b, sx, sy) {
   const type = b.type || 'house';
   softShadow(sx + b.w/2 + 6, sy + b.h + 6, b.w*0.6, 14, 0.28);
-  if (type === 'eiffel') { drawEiffel(b, sx, sy); drawBuildingLabel(b, sx, sy, false); return; }
+  if (type === 'eiffel') { drawEiffel(b, sx, sy); return; }
 
   // walls
   ctx.fillStyle = lin(sx, sy, sx + b.w, sy + b.h, lighten(b.color, 0.14), darken(b.color, 0.16));
@@ -1982,7 +2241,7 @@ function paintBuilding(b, sx, sy) {
     for (let wr = 0; wr < rows; wr++) {
       for (let wc = 0; wc < cols; wc++) {
         const wx = sx + gapX * (wc + 1) - 8;
-        const wy = sy + 16 + wr * 38;
+        const wy = sy + 26 + wr * 38;
         if (wy + 14 > sy + b.h - 18) continue;
         ctx.fillStyle = 'rgba(255,225,150,0.35)';
         ctx.beginPath(); ctx.arc(wx + 8, wy + 7, 13, 0, Math.PI*2); ctx.fill();
@@ -1999,20 +2258,27 @@ function paintBuilding(b, sx, sy) {
     ctx.fillStyle = th.accent;
     ctx.beginPath(); ctx.arc(sx + b.w/2 + 4, sy + b.h - dh/2, 2, 0, Math.PI*2); ctx.fill();
   }
-  drawBuildingLabel(b, sx, sy, false);
+  drawBuildingLabel(b, sx, sy);
 }
 
-function drawBuildingLabel(b, sx, sy, inside) {
-  ctx.font = 'bold 12px Georgia';
-  ctx.textAlign = 'center';
-  const x = sx + b.w/2;
-  const y = inside ? sy + b.h/2 : sy - 26 - (b.type === 'castle' ? 14 : 0);
-  const w = ctx.measureText(b.label).width + 14;
-  ctx.fillStyle = 'rgba(20,18,34,0.55)';
-  roundRectPath(x - w/2, y - 9, w, 18, 9); ctx.fill();
-  ctx.fillStyle = b.labelColor || '#fff';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(b.label, x, y + 1);
+function drawBuildingLabel(b, sx, sy) {
+  // Painted shop-front frieze across the top of the facade,
+  // in the building's own colours — no floating pill
+  let size = 12;
+  ctx.font = `bold ${size}px Georgia`;
+  while (ctx.measureText(b.label).width > b.w - 16 && size > 8) {
+    size--;
+    ctx.font = `bold ${size}px Georgia`;
+  }
+  const bandH = 16, by = sy + 4;
+  ctx.fillStyle = darken(b.color, 0.24);
+  roundRectPath(sx + 4, by, b.w - 8, bandH, 4);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillRect(sx + 6, by + 1, b.w - 12, 2);
+  ctx.fillStyle = '#fdf3dc';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(b.label, sx + b.w / 2, by + bandH / 2 + 1);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
 }
@@ -2043,6 +2309,16 @@ function drawEiffel(b, sx, sy) {
   ctx.fillStyle = bk; ctx.beginPath(); ctx.arc(cx, sy - 2, 10, 0, Math.PI*2); ctx.fill();
   ctx.fillStyle = '#f0e070';
   ctx.beginPath(); ctx.arc(cx, sy - 2, 3, 0, Math.PI*2); ctx.fill();
+  // small brass plaque at the foot of the tower
+  ctx.font = 'bold 10px Georgia';
+  const pw = ctx.measureText(b.label).width + 12;
+  ctx.fillStyle = '#8a6334';
+  roundRectPath(cx - pw / 2, sy + b.h + 4, pw, 14, 3); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = '#fdf3dc';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(b.label, cx, sy + b.h + 11);
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
 }
 
 // Chimney smoke (drawn above entities — it floats)
@@ -2472,12 +2748,16 @@ function buildAmbientFolk() {
   const palettes = ['#d98a8a','#8aa8d9','#9ed98a','#d9c98a','#c98ad9','#8ad9c9'];
   let s = 7;
   const rnd = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+  const FOLK_COUNT = { paris: 17, cuernavaca: 7 };
   for (const key of Object.keys(REGIONS)) {
     const o = regionOrigin(key);
-    for (let i = 0; i < 5; i++) {
+    const n = FOLK_COUNT[key] || 5;
+    for (let i = 0; i < n; i++) {
+      // Parisians stroll along the boulevard and the Seine banks
+      const nearStreets = key === 'paris' && i % 3 !== 0;
       ambientFolk.push({
         bx: o.x + 150 + rnd() * (REGION_W - 300),
-        by: o.y + 150 + rnd() * (REGION_H - 350),
+        by: nearStreets ? o.y + 420 + rnd() * 420 : o.y + 150 + rnd() * (REGION_H - 350),
         color: palettes[Math.floor(rnd() * palettes.length)],
         ph: rnd() * Math.PI * 2,
         range: 20 + rnd() * 40,
@@ -2781,38 +3061,57 @@ const MM_W = 160, MM_H = 106;
 const MM_DPR = Math.min(window.devicePixelRatio || 1, 2);
 minimapCanvas.width = MM_W * MM_DPR;
 minimapCanvas.height = MM_H * MM_DPR;
-const MM_SCALE_X = MM_W / WORLD_W;
-const MM_SCALE_Y = MM_H / WORLD_H;
+const MM_S = Math.min(MM_W / WORLD_W, MM_H / WORLD_H);
+const MM_OX = (MM_W - WORLD_W * MM_S) / 2;
+const MM_OY = (MM_H - WORLD_H * MM_S) / 2;
+const mmX = (wx) => wx * MM_S + MM_OX;
+const mmY = (wy) => wy * MM_S + MM_OY;
 function drawMinimap() {
   mctx.setTransform(MM_DPR, 0, 0, MM_DPR, 0, 0);
   mctx.clearRect(0, 0, MM_W, MM_H);
+  // countryside backdrop
+  mctx.fillStyle = '#5d7245';
+  mctx.fillRect(MM_OX, MM_OY, WORLD_W * MM_S, WORLD_H * MM_S);
+  // roads
+  mctx.strokeStyle = 'rgba(210,190,150,0.55)'; mctx.lineWidth = 1;
+  for (const [a, b] of REGION_LINKS) {
+    const ca = regionCenter(a), cb = regionCenter(b);
+    mctx.beginPath(); mctx.moveTo(mmX(ca.x), mmY(ca.y)); mctx.lineTo(mmX(cb.x), mmY(cb.y)); mctx.stroke();
+  }
+  // landmasses
   for (const [key, r] of Object.entries(REGIONS)) {
-    const rx = r.col*REGION_W*MM_SCALE_X, ry = r.row*REGION_H*MM_SCALE_Y;
-    const rw = REGION_W*MM_SCALE_X, rh = REGION_H*MM_SCALE_Y;
+    const rx = mmX(r.x), ry = mmY(r.y);
+    const rw = REGION_W * MM_S, rh = REGION_H * MM_S;
     const th = THEME[key];
-    const g = mctx.createLinearGradient(rx, ry, rx, ry+rh);
+    const g = mctx.createLinearGradient(rx, ry, rx, ry + rh);
     g.addColorStop(0, th.gTop); g.addColorStop(1, th.gBot);
-    mctx.fillStyle = g; mctx.fillRect(rx, ry, rw, rh);
-    // water hints
-    if (key === 'acapulco') { mctx.fillStyle = th.water; mctx.fillRect(rx + rw - 10, ry, 10, rh); }
-    mctx.strokeStyle = 'rgba(255,255,255,0.3)'; mctx.lineWidth = 0.5; mctx.strokeRect(rx, ry, rw, rh);
-    mctx.fillStyle = 'rgba(255,255,255,0.8)'; mctx.font = '6px Georgia'; mctx.textAlign = 'center';
-    mctx.fillText(r.name, rx+rw/2, ry+rh/2+2);
+    mctx.fillStyle = g;
+    mctx.beginPath();
+    if (mctx.roundRect) mctx.roundRect(rx, ry, rw, rh, 6); else mctx.rect(rx, ry, rw, rh);
+    mctx.fill();
+    if (key === 'acapulco') {
+      mctx.save(); mctx.clip();
+      mctx.fillStyle = th.water; mctx.fillRect(rx + rw - 9, ry, 9, rh);
+      mctx.restore();
+    }
+    mctx.strokeStyle = 'rgba(255,255,255,0.35)'; mctx.lineWidth = 0.6; mctx.stroke();
+    mctx.fillStyle = 'rgba(255,255,255,0.85)'; mctx.font = '6px Georgia'; mctx.textAlign = 'center';
+    mctx.fillText(r.name, rx + rw / 2, ry + rh / 2 + 2);
   }
   // candle NPCs
   for (const npc of npcs) {
     if (!npc.hasCandle) continue;
     mctx.fillStyle = '#f5c842';
-    mctx.beginPath(); mctx.arc(npc.x*MM_SCALE_X, npc.y*MM_SCALE_Y, 2, 0, Math.PI*2); mctx.fill();
+    mctx.beginPath(); mctx.arc(mmX(npc.x), mmY(npc.y), 2, 0, Math.PI * 2); mctx.fill();
   }
   // camera viewport
   mctx.strokeStyle = 'rgba(255,255,255,0.75)'; mctx.lineWidth = 0.8;
-  mctx.strokeRect(camX*MM_SCALE_X, camY*MM_SCALE_Y, DW*MM_SCALE_X, DH*MM_SCALE_Y);
+  mctx.strokeRect(mmX(camX), mmY(camY), DW * MM_S, DH * MM_S);
   // player with pulse
-  const px = gameState.playerX*MM_SCALE_X, py = gameState.playerY*MM_SCALE_Y;
+  const px = mmX(gameState.playerX), py = mmY(gameState.playerY);
   mctx.fillStyle = 'rgba(255,80,80,0.4)';
-  mctx.beginPath(); mctx.arc(px, py, 4 + Math.sin(Date.now()*0.005)*1.5, 0, Math.PI*2); mctx.fill();
-  mctx.fillStyle = '#ff4444'; mctx.beginPath(); mctx.arc(px, py, 3, 0, Math.PI*2); mctx.fill();
+  mctx.beginPath(); mctx.arc(px, py, 4 + Math.sin(Date.now() * 0.005) * 1.5, 0, Math.PI * 2); mctx.fill();
+  mctx.fillStyle = '#ff4444'; mctx.beginPath(); mctx.arc(px, py, 3, 0, Math.PI * 2); mctx.fill();
   mctx.strokeStyle = '#fff'; mctx.lineWidth = 1; mctx.stroke();
   mctx.textAlign = 'left';
 }
@@ -2825,7 +3124,9 @@ function render() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.clearRect(0, 0, DW, DH);
 
-  // 1. Terrain, paths, water, labels
+  // 1. Countryside base, inter-region roads, then landmasses
+  drawWilderness();
+  drawInterRoads();
   drawGroundBase();
 
   // 2. Flat zones & ground-level decorations
